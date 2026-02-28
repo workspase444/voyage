@@ -10,8 +10,18 @@ const DATA_FILE = path.join(__dirname, 'participants.json');
 // Middleware
 app.use(bodyParser.json());
 
-// SECURE: Only serve files from the 'public' directory
-app.use(express.static(path.join(__dirname, 'public')));
+// SECURITY: Prevent direct browser access to sensitive files while serving root statically
+const protectedFiles = ['participants.json', 'server.js', 'package.json', 'package-lock.json', '.gitignore', 'admin.html'];
+app.use((req, res, next) => {
+    const requestedFile = path.basename(req.url);
+    if (protectedFiles.includes(requestedFile)) {
+        return res.status(403).send('Access Denied');
+    }
+    next();
+});
+
+// Serve root directory statically (for index.html and other assets)
+app.use(express.static(__dirname));
 
 // Initialize data file if it doesn't exist
 async function initDataFile() {
@@ -52,7 +62,7 @@ app.get('/api/participants', async (req, res) => {
     }
 });
 
-// Admin Route - Serves admin.html securely (not via static middleware)
+// Admin Route - Serves admin.html securely
 app.get('/admin-dashboard-access-key-777', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin.html'));
 });
