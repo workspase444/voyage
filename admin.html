@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - إدارة المشاركين</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+        .bg-turquoise { background-color: #40E0D0; }
+        .text-turquoise { color: #40E0D0; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+    <nav class="bg-white shadow-md p-6 mb-10">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-turquoise">لوحة تحكم الرحلة</h1>
+            <div class="flex items-center space-x-reverse space-x-4 text-gray-600">
+                <span>إدارة المشاركين</span>
+                <button onclick="window.location.reload()" class="bg-gray-100 hover:bg-gray-200 p-2 rounded-lg transition">🔄 تحديث القائمة</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-right border-collapse">
+                    <thead>
+                        <tr class="bg-turquoise text-white">
+                            <th class="p-4 border-b">الاسم واللقب</th>
+                            <th class="p-4 border-b">تاريخ الميلاد</th>
+                            <th class="p-4 border-b">الجنس</th>
+                            <th class="p-4 border-b">مكان الميلاد</th>
+                            <th class="p-4 border-b">السكن</th>
+                            <th class="p-4 border-b">الوظيفة</th>
+                            <th class="p-4 border-b">إسعافات أولية؟</th>
+                            <th class="p-4 border-b">تاريخ التسجيل</th>
+                        </tr>
+                    </thead>
+                    <tbody id="participantsList">
+                        <!-- Data will be loaded here -->
+                        <tr>
+                            <td colspan="8" class="p-10 text-center text-gray-500 italic">جاري تحميل البيانات...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchParticipants() {
+            try {
+                const response = await fetch('/api/participants');
+                const participants = await response.json();
+
+                const tableBody = document.getElementById('participantsList');
+                tableBody.innerHTML = '';
+
+                if (participants.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="8" class="p-10 text-center text-gray-500">لا يوجد مسجلون بعد.</td></tr>';
+                    return;
+                }
+
+                participants.reverse().forEach(p => {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b hover:bg-gray-50 transition';
+
+                    const createCell = (text, className = 'p-4') => {
+                        const cell = document.createElement('td');
+                        cell.className = className;
+                        cell.textContent = text;
+                        return cell;
+                    };
+
+                    const nameCell = createCell(p.fullName, 'p-4 font-bold');
+                    const birthDateCell = createCell(p.birthDate);
+                    const genderCell = createCell(p.gender);
+                    const birthPlaceCell = createCell(p.birthPlace);
+                    const currentAddressCell = createCell(p.currentAddress);
+                    const jobTypeCell = createCell(p.jobType);
+
+                    const firstAidCell = document.createElement('td');
+                    firstAidCell.className = 'p-4';
+                    const firstAidBadge = document.createElement('span');
+                    firstAidBadge.className = `px-2 py-1 rounded text-sm ${p.firstAid === 'نعم' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
+                    firstAidBadge.textContent = p.firstAid;
+                    firstAidCell.appendChild(firstAidBadge);
+
+                    const timestampCell = createCell(new Date(p.timestamp).toLocaleString('ar-DZ'), 'p-4 text-xs text-gray-500');
+
+                    row.appendChild(nameCell);
+                    row.appendChild(birthDateCell);
+                    row.appendChild(genderCell);
+                    row.appendChild(birthPlaceCell);
+                    row.appendChild(currentAddressCell);
+                    row.appendChild(jobTypeCell);
+                    row.appendChild(firstAidCell);
+                    row.appendChild(timestampCell);
+
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('participantsList').innerHTML = '<tr><td colspan="8" class="p-10 text-center text-red-500">حدث خطأ في جلب البيانات.</td></tr>';
+            }
+        }
+
+        fetchParticipants();
+    </script>
+</body>
+</html>
