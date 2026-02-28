@@ -21,9 +21,38 @@
             background-size: cover;
             background-position: center;
         }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+        }
+        .modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 80%;
+            border-radius: 15px;
+            margin-top: 5%;
+        }
     </style>
 </head>
 <body class="text-gray-800">
+
+    <!-- Modal for viewing images -->
+    <div id="imageModal" class="modal flex items-center justify-center p-4" onclick="this.style.display='none'">
+        <div class="max-w-4xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl relative" onclick="event.stopPropagation()">
+            <button class="absolute top-4 right-4 text-gray-800 text-3xl font-bold bg-white/80 w-10 h-10 rounded-full flex items-center justify-center z-10" onclick="document.getElementById('imageModal').style.display='none'">&times;</button>
+            <img id="modalImg" src="" class="w-full h-[60vh] object-cover">
+            <div class="p-8 text-center">
+                <h3 id="modalTitle" class="text-2xl font-bold text-turquoise"></h3>
+            </div>
+        </div>
+    </div>
 
     <!-- Header / Nav -->
     <header class="fixed w-full z-50 bg-white/90 backdrop-blur-sm shadow-sm">
@@ -49,32 +78,10 @@
     <section id="features" class="py-20 bg-gray-50">
         <div class="container mx-auto px-6">
             <h2 class="text-3xl font-bold text-center mb-16 text-turquoise">ماذا ينتظرك في هذه الرحلة؟</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-                <!-- Feature 1 -->
-                <div class="bg-white p-8 rounded-2xl shadow-lg text-center hover:shadow-xl transition">
-                    <div class="text-4xl mb-4">🏨</div>
-                    <h3 class="text-xl font-bold mb-3">فنادق 4 نجوم</h3>
-                    <p class="text-gray-600">إقامة مريحة تضمن لك جودة الخدمات والرفاهية خلال رحلتك.</p>
-                </div>
-                <!-- Feature 2 -->
-                <div class="bg-white p-8 rounded-2xl shadow-lg text-center hover:shadow-xl transition">
-                    <div class="text-4xl mb-4">🏖️</div>
-                    <h3 class="text-xl font-bold mb-3">شواطئ فيروزية</h3>
-                    <p class="text-gray-600">استمتع برمال الشرق الذهبية ومياهه الكريستالية الصافية.</p>
-                </div>
-                <!-- Feature 3 -->
-                <div class="bg-white p-8 rounded-2xl shadow-lg text-center hover:shadow-xl transition">
-                    <div class="text-4xl mb-4">🧖‍♂️</div>
-                    <h3 class="text-xl font-bold mb-3">حمامات معدنية</h3>
-                    <p class="text-gray-600">استجمام وعلاج في أعرق الحمامات الطبيعية في المنطقة.</p>
-                </div>
-                <!-- Feature 4 -->
-                <div class="bg-white p-8 rounded-2xl shadow-lg text-center hover:shadow-xl transition">
-                    <div class="text-4xl mb-4">🎢</div>
-                    <h3 class="text-xl font-bold mb-3">ألعاب مائية وملاهي</h3>
-                    <p class="text-gray-600">مرح بلا حدود في أكبر مدن الملاهي والحدائق الميكانيكية.</p>
-                </div>
+            <div id="featuresGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+                <!-- Features will be loaded dynamically -->
             </div>
+            <p class="text-center mt-10 text-gray-500 italic">اضغط على أي ميزة لمشاهدة الصور</p>
         </div>
     </section>
 
@@ -98,7 +105,6 @@
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dir-ltr" dir="ltr">+213</span>
                                 <input type="tel" id="phoneNumber" name="phoneNumber" required pattern="[567][0-9]{8}" placeholder="XXXXXXXXX" class="w-full pl-16 pr-4 py-3 rounded-xl border border-gray-300 focus:border-turquoise focus:ring-2 focus:ring-turquoise outline-none transition dir-ltr" dir="ltr">
                             </div>
-                            <p class="text-xs text-gray-500 mt-1">مثال: 550123456</p>
                         </div>
                     </div>
 
@@ -164,35 +170,60 @@
     </footer>
 
     <script>
+        let featureData = {};
+
+        async function loadFeatures() {
+            const res = await fetch('/api/features');
+            featureData = await res.json();
+            const grid = document.getElementById('featuresGrid');
+            grid.innerHTML = '';
+
+            const icons = { hotel: '🏨', beaches: '🏖️', baths: '🧖‍♂️', park: '🎢' };
+
+            Object.entries(featureData).forEach(([key, feature]) => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-8 rounded-2xl shadow-lg text-center hover:shadow-xl transition cursor-pointer transform hover:-translate-y-2';
+                card.onclick = () => openModal(key);
+                card.innerHTML = `
+                    <div class="text-4xl mb-4">${icons[key]}</div>
+                    <h3 class="text-xl font-bold mb-3">${feature.title}</h3>
+                    <p class="text-gray-600">اضغط لرؤية الصور والتفاصيل</p>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function openModal(key) {
+            const feature = featureData[key];
+            document.getElementById('modalImg').src = feature.image;
+            document.getElementById('modalTitle').textContent = feature.title;
+            document.getElementById('imageModal').style.display = 'flex';
+        }
+
         document.getElementById('registrationForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-
             const formData = new FormData(this);
             const data = Object.fromEntries(formData.entries());
-
-            // Format phone number with prefix
             data.phoneNumber = '+213' + data.phoneNumber;
 
             try {
                 const response = await fetch('/api/register', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(data)
                 });
-
                 if (response.ok) {
                     this.classList.add('hidden');
                     document.getElementById('successMessage').classList.remove('hidden');
                 } else {
-                    alert('حدث خطأ أثناء إرسال البيانات. يرجى المحاولة لاحقاً.');
+                    alert('خطأ في الإرسال');
                 }
             } catch (error) {
-                console.error('Error:', error);
-                alert('فشل الاتصال بالخادم.');
+                alert('فشل الاتصال');
             }
         });
+
+        loadFeatures();
     </script>
 </body>
 </html>
