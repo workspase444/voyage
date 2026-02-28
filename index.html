@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سحر الشرق الجزائري - رحلة الرفاهية والاسترخاء</title>
+    <title>رحلة الشرق الجزائري - رفاهية واستكشاف</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700&family=Tajawal:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
@@ -28,7 +28,7 @@
     <!-- Header / Nav -->
     <header class="fixed w-full z-50 bg-white/90 backdrop-blur-sm shadow-sm">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="text-2xl font-bold text-turquoise">نسمة الشرق</div>
+            <div class="text-2xl font-bold text-turquoise">رحلة الشرق الجزائري</div>
             <nav class="hidden md:flex space-x-reverse space-x-8">
                 <a href="#features" class="hover:text-turquoise transition">المميزات</a>
                 <a href="#register" class="hover:text-turquoise transition">سجل الآن</a>
@@ -53,8 +53,8 @@
                 <!-- Feature 1 -->
                 <div class="bg-white p-8 rounded-2xl shadow-lg text-center hover:shadow-xl transition">
                     <div class="text-4xl mb-4">🏨</div>
-                    <h3 class="text-xl font-bold mb-3">فنادق 5 نجوم</h3>
-                    <p class="text-gray-600">إقامة فاخرة تضمن لك أعلى مستويات الراحة والرفاهية.</p>
+                    <h3 class="text-xl font-bold mb-3">فنادق 4 نجوم</h3>
+                    <p class="text-gray-600">إقامة مريحة تضمن لك جودة الخدمات والرفاهية خلال رحلتك.</p>
                 </div>
                 <!-- Feature 2 -->
                 <div class="bg-white p-8 rounded-2xl shadow-lg text-center hover:shadow-xl transition">
@@ -93,12 +93,20 @@
                             <input type="text" id="fullName" name="fullName" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-turquoise focus:ring-2 focus:ring-turquoise outline-none transition">
                         </div>
                         <div>
-                            <label class="block text-gray-700 mb-2" for="birthDate">تاريخ الميلاد</label>
-                            <input type="date" id="birthDate" name="birthDate" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-turquoise focus:ring-2 focus:ring-turquoise outline-none transition">
+                            <label class="block text-gray-700 mb-2" for="phoneNumber">رقم الهاتف</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dir-ltr" dir="ltr">+213</span>
+                                <input type="tel" id="phoneNumber" name="phoneNumber" required pattern="[567][0-9]{8}" placeholder="XXXXXXXXX" class="w-full pl-16 pr-4 py-3 rounded-xl border border-gray-300 focus:border-turquoise focus:ring-2 focus:ring-turquoise outline-none transition dir-ltr" dir="ltr">
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">مثال: 550123456</p>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-gray-700 mb-2" for="birthDate">تاريخ الميلاد</label>
+                            <input type="date" id="birthDate" name="birthDate" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-turquoise focus:ring-2 focus:ring-turquoise outline-none transition">
+                        </div>
                         <div>
                             <label class="block text-gray-700 mb-2">الجنس</label>
                             <select id="gender" name="gender" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-turquoise focus:ring-2 focus:ring-turquoise outline-none transition">
@@ -107,34 +115,36 @@
                                 <option value="أنثى">أنثى</option>
                             </select>
                         </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-gray-700 mb-2" for="birthPlace">مكان الميلاد</label>
                             <input type="text" id="birthPlace" name="birthPlace" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-turquoise focus:ring-2 focus:ring-turquoise outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2" for="currentAddress">مكان السكن الحالي</label>
+                            <input type="text" id="currentAddress" name="currentAddress" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-turquoise focus:ring-2 focus:ring-turquoise outline-none transition">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-gray-700 mb-2" for="currentAddress">مكان السكن الحالي</label>
-                            <input type="text" id="currentAddress" name="currentAddress" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-turquoise focus:ring-2 focus:ring-turquoise outline-none transition">
-                        </div>
-                        <div>
                             <label class="block text-gray-700 mb-2" for="jobType">نوع الوظيفة</label>
                             <input type="text" id="jobType" name="jobType" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-turquoise focus:ring-2 focus:ring-turquoise outline-none transition">
                         </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-gray-700 mb-2">هل تجيد الإسعافات الأولية؟</label>
-                        <div class="flex space-x-reverse space-x-6">
-                            <label class="inline-flex items-center cursor-pointer">
-                                <input type="radio" name="firstAid" value="نعم" required class="w-5 h-5 text-turquoise focus:ring-turquoise">
-                                <span class="mr-2">نعم</span>
-                            </label>
-                            <label class="inline-flex items-center cursor-pointer">
-                                <input type="radio" name="firstAid" value="لا" class="w-5 h-5 text-turquoise focus:ring-turquoise">
-                                <span class="mr-2">لا</span>
-                            </label>
+                        <div>
+                            <label class="block text-gray-700 mb-2">هل تجيد الإسعافات الأولية؟</label>
+                            <div class="flex space-x-reverse space-x-6 pt-3">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="firstAid" value="نعم" required class="w-5 h-5 text-turquoise focus:ring-turquoise">
+                                    <span class="mr-2">نعم</span>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="firstAid" value="لا" class="w-5 h-5 text-turquoise focus:ring-turquoise">
+                                    <span class="mr-2">لا</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
 
@@ -150,7 +160,7 @@
 
     <!-- Footer -->
     <footer class="bg-gray-900 text-white py-10 text-center">
-        <p>© 2024 نسمة الشرق للسياحة والأسفار. جميع الحقوق محفوظة.</p>
+        <p>© 2024 رحلة الشرق الجزائري للسياحة والأسفار. جميع الحقوق محفوظة.</p>
     </footer>
 
     <script>
@@ -159,6 +169,9 @@
 
             const formData = new FormData(this);
             const data = Object.fromEntries(formData.entries());
+
+            // Format phone number with prefix
+            data.phoneNumber = '+213' + data.phoneNumber;
 
             try {
                 const response = await fetch('/api/register', {

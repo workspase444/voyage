@@ -31,6 +31,7 @@
                     <thead>
                         <tr class="bg-turquoise text-white">
                             <th class="p-4 border-b">الاسم واللقب</th>
+                            <th class="p-4 border-b">رقم الهاتف</th>
                             <th class="p-4 border-b">تاريخ الميلاد</th>
                             <th class="p-4 border-b">الجنس</th>
                             <th class="p-4 border-b">مكان الميلاد</th>
@@ -43,7 +44,7 @@
                     <tbody id="participantsList">
                         <!-- Data will be loaded here -->
                         <tr>
-                            <td colspan="8" class="p-10 text-center text-gray-500 italic">جاري تحميل البيانات...</td>
+                            <td colspan="9" class="p-10 text-center text-gray-500 italic">جاري تحميل البيانات...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -61,7 +62,7 @@
                 tableBody.innerHTML = '';
 
                 if (participants.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="8" class="p-10 text-center text-gray-500">لا يوجد مسجلون بعد.</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="9" class="p-10 text-center text-gray-500">لا يوجد مسجلون بعد.</td></tr>';
                     return;
                 }
 
@@ -72,11 +73,14 @@
                     const createCell = (text, className = 'p-4') => {
                         const cell = document.createElement('td');
                         cell.className = className;
-                        cell.textContent = text;
+                        cell.textContent = text || '-';
                         return cell;
                     };
 
                     const nameCell = createCell(p.fullName, 'p-4 font-bold');
+                    const phoneCell = createCell(p.phoneNumber, 'p-4 dir-ltr');
+                    phoneCell.setAttribute('dir', 'ltr');
+
                     const birthDateCell = createCell(p.birthDate);
                     const genderCell = createCell(p.gender);
                     const birthPlaceCell = createCell(p.birthPlace);
@@ -93,6 +97,7 @@
                     const timestampCell = createCell(new Date(p.timestamp).toLocaleString('ar-DZ'), 'p-4 text-xs text-gray-500');
 
                     row.appendChild(nameCell);
+                    row.appendChild(phoneCell);
                     row.appendChild(birthDateCell);
                     row.appendChild(genderCell);
                     row.appendChild(birthPlaceCell);
@@ -105,7 +110,7 @@
                 });
             } catch (error) {
                 console.error('Error:', error);
-                document.getElementById('participantsList').innerHTML = '<tr><td colspan="8" class="p-10 text-center text-red-500">حدث خطأ في جلب البيانات.</td></tr>';
+                document.getElementById('participantsList').innerHTML = '<tr><td colspan="9" class="p-10 text-center text-red-500">حدث خطأ في جلب البيانات.</td></tr>';
             }
         }
 
