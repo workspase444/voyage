@@ -41,7 +41,7 @@
                                 <th class="p-4 border-b">السكن</th>
                                 <th class="p-4 border-b">الوظيفة</th>
                                 <th class="p-4 border-b">إسعافات أولية؟</th>
-                                <th class="p-4 border-b">تاريخ التسجيل</th>
+                                <th class="p-4 border-b">التاريخ</th>
                             </tr>
                         </thead>
                         <tbody id="participantsList">
@@ -54,29 +54,43 @@
 
         <!-- Features Section -->
         <div id="featuresSection" class="section hidden">
-            <div class="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-xl">
-                <h2 class="text-2xl font-bold mb-8 text-center">تحديث صور المميزات</h2>
-                <form id="featuresForm" class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div>
-                            <label class="block font-bold mb-2">فندق 4 نجوم (رابط الصورة)</label>
-                            <input type="url" name="hotel" required class="w-full p-3 rounded-lg border">
-                        </div>
-                        <div>
-                            <label class="block font-bold mb-2">شواطئ فيروزية (رابط الصورة)</label>
-                            <input type="url" name="beaches" required class="w-full p-3 rounded-lg border">
-                        </div>
-                        <div>
-                            <label class="block font-bold mb-2">حمامات معدنية (رابط الصورة)</label>
-                            <input type="url" name="baths" required class="w-full p-3 rounded-lg border">
-                        </div>
-                        <div>
-                            <label class="block font-bold mb-2">ألعاب مائية وملاهي (رابط الصورة)</label>
-                            <input type="url" name="park" required class="w-full p-3 rounded-lg border">
-                        </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Feature Category Card -->
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4 text-turquoise">فندق 4 نجوم</h3>
+                    <div class="flex items-center space-x-reverse space-x-2 mb-4">
+                        <input type="file" id="file-hotel" class="hidden" onchange="uploadImage('hotel', this)">
+                        <label for="file-hotel" class="cursor-pointer bg-turquoise text-white px-4 py-2 rounded-lg hover:opacity-90 transition">إضافة صورة +</label>
                     </div>
-                    <button type="submit" class="w-full bg-turquoise text-white py-4 rounded-xl font-bold text-lg hover:opacity-90 transition">حفظ التغييرات</button>
-                </form>
+                    <div id="gallery-hotel" class="grid grid-cols-3 gap-3"></div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4 text-turquoise">شواطئ فيروزية</h3>
+                    <div class="flex items-center space-x-reverse space-x-2 mb-4">
+                        <input type="file" id="file-beaches" class="hidden" onchange="uploadImage('beaches', this)">
+                        <label for="file-beaches" class="cursor-pointer bg-turquoise text-white px-4 py-2 rounded-lg hover:opacity-90 transition">إضافة صورة +</label>
+                    </div>
+                    <div id="gallery-beaches" class="grid grid-cols-3 gap-3"></div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4 text-turquoise">حمامات معدنية</h3>
+                    <div class="flex items-center space-x-reverse space-x-2 mb-4">
+                        <input type="file" id="file-baths" class="hidden" onchange="uploadImage('baths', this)">
+                        <label for="file-baths" class="cursor-pointer bg-turquoise text-white px-4 py-2 rounded-lg hover:opacity-90 transition">إضافة صورة +</label>
+                    </div>
+                    <div id="gallery-baths" class="grid grid-cols-3 gap-3"></div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4 text-turquoise">ألعاب مائية وملاهي</h3>
+                    <div class="flex items-center space-x-reverse space-x-2 mb-4">
+                        <input type="file" id="file-park" class="hidden" onchange="uploadImage('park', this)">
+                        <label for="file-park" class="cursor-pointer bg-turquoise text-white px-4 py-2 rounded-lg hover:opacity-90 transition">إضافة صورة +</label>
+                    </div>
+                    <div id="gallery-park" class="grid grid-cols-3 gap-3"></div>
+                </div>
             </div>
         </div>
 
@@ -91,17 +105,11 @@
         }
 
         async function loadParticipants() {
-            const res = await fetch('/api/participants', {
-                headers: { 'X-Admin-Token': ADMIN_TOKEN }
-            });
-            if (!res.ok) {
-                alert('خطأ في التفويض');
-                return;
-            }
+            const res = await fetch('/api/participants', { headers: { 'X-Admin-Token': ADMIN_TOKEN } });
             const data = await res.json();
             const body = document.getElementById('participantsList');
             body.innerHTML = '';
-            data.reverse().forEach(p => {
+            data.forEach(p => {
                 const row = document.createElement('tr');
                 row.className = 'border-b hover:bg-gray-50';
 
@@ -129,39 +137,56 @@
             });
         }
 
-        async function loadFeatures() {
-            const res = await fetch('/api/features');
-            const data = await res.json();
-            const form = document.getElementById('featuresForm');
-            form.hotel.value = data.hotel.image;
-            form.beaches.value = data.beaches.image;
-            form.baths.value = data.baths.image;
-            form.park.value = data.park.image;
+        async function loadGalleries() {
+            const res = await fetch('/api/admin-features', { headers: { 'X-Admin-Token': ADMIN_TOKEN } });
+            const allImages = await res.json();
+
+            ['hotel', 'beaches', 'baths', 'park'].forEach(cat => {
+                const container = document.getElementById('gallery-' + cat);
+                container.innerHTML = '';
+                allImages.filter(img => img.category === cat).forEach(img => {
+                    const div = document.createElement('div');
+                    div.className = 'relative group aspect-square';
+                    div.innerHTML = `
+                        <img src="/uploads/${img.filename}" class="w-full h-full object-cover rounded-xl shadow-md">
+                        <button onclick="deleteImage(${img.id})" class="absolute -top-2 -right-2 bg-red-500 text-white w-7 h-7 rounded-full flex items-center justify-center shadow-lg hover:bg-red-600 transition">&times;</button>
+                    `;
+                    container.appendChild(div);
+                });
+            });
         }
 
-        document.getElementById('featuresForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const update = {
-                hotel: { title: "فندق 4 نجوم", image: formData.get('hotel') },
-                beaches: { title: "شواطئ فيروزية", image: formData.get('beaches') },
-                baths: { title: "حمامات معدنية", image: formData.get('baths') },
-                park: { title: "ألعاب مائية وملاهي", image: formData.get('park') }
-            };
-            const res = await fetch('/api/features', {
+        async function uploadImage(category, input) {
+            if (!input.files[0]) return;
+            const formData = new FormData();
+            formData.append('image', input.files[0]);
+            formData.append('category', category);
+
+            const res = await fetch('/api/upload-image', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Admin-Token': ADMIN_TOKEN
-                },
-                body: JSON.stringify(update)
+                headers: { 'X-Admin-Token': ADMIN_TOKEN },
+                body: formData
             });
-            if (res.ok) alert('تم التحديث بنجاح');
-            else alert('فشل التحديث');
-        };
+            if (res.ok) {
+                input.value = '';
+                loadGalleries();
+            } else {
+                alert('فشل في رفع الصورة');
+            }
+        }
+
+        async function deleteImage(id) {
+            if (confirm('هل تريد حذف هذه الصورة؟')) {
+                await fetch('/api/delete-image/' + id, {
+                    method: 'DELETE',
+                    headers: { 'X-Admin-Token': ADMIN_TOKEN }
+                });
+                loadGalleries();
+            }
+        }
 
         loadParticipants();
-        loadFeatures();
+        loadGalleries();
     </script>
 </body>
 </html>
