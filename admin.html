@@ -7,11 +7,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Cairo', sans-serif; background: #f1f5f9; }
-        .bg-turquoise { background-color: #40E0D0; }
-        .text-turquoise { color: #40E0D0; }
-        .bg-gold { background-color: #FFD700; }
-        .tab-active { background: white; color: #40E0D0; font-weight: 800; border-bottom: 4px solid #40E0D0; }
+        :root {
+            --sea-blue: #0284c7;
+            --sea-blue-dark: #0c4a6e;
+            --sandy-gold: #fbbf24;
+        }
+        body { font-family: 'Cairo', sans-serif; background: #f8fafc; color: var(--sea-blue-dark); }
+        .bg-sea-blue { background-color: var(--sea-blue); }
+        .text-sea-blue { color: var(--sea-blue); }
+        .bg-sandy-gold { background-color: var(--sandy-gold); }
+        .tab-active { background: white; color: var(--sea-blue); font-weight: 800; border-bottom: 4px solid var(--sea-blue); }
         @media print {
             .no-print { display: none !important; }
             body { background: white; }
@@ -21,21 +26,20 @@
             th { background: #f8f8f8 !important; color: black !important; }
         }
         .print-only { display: none; }
-        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 1px solid white; }
     </style>
 </head>
-<body class="min-h-screen text-slate-800">
+<body class="min-h-screen">
 
-    <nav class="bg-slate-900 text-white shadow-2xl p-6 mb-10 no-print">
+    <nav class="bg-sea-blue-dark text-white shadow-2xl p-6 mb-10 no-print">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center space-x-reverse space-x-4">
-                <div class="w-12 h-12 bg-turquoise rounded-2xl flex items-center justify-center text-2xl">🌍</div>
+                <div class="w-12 h-12 bg-sea-blue rounded-2xl flex items-center justify-center text-2xl">🌍</div>
                 <h1 class="text-2xl font-black tracking-tight">إدارة رحلة الشرق</h1>
             </div>
             <div class="flex flex-wrap justify-center gap-3">
                 <button onclick="showSection('participants')" class="px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition font-bold">👤 المشاركون</button>
                 <button onclick="showSection('features')" class="px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition font-bold">🖼️ معرض الصور</button>
-                <button onclick="printTravelers()" class="px-6 py-2.5 rounded-xl bg-gold text-slate-900 hover:scale-105 transition font-black">🖨️ طباعة القائمة</button>
+                <button onclick="printTravelers()" class="px-6 py-2.5 rounded-xl bg-sandy-gold text-slate-900 hover:scale-105 transition font-black">🖨️ طباعة القائمة</button>
             </div>
         </div>
     </nav>
@@ -75,36 +79,36 @@
         <div id="featuresSection" class="section hidden">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-50">
-                    <h3 class="text-2xl font-black mb-6 text-turquoise flex items-center gap-3">🏨 فندق 4 نجوم</h3>
+                    <h3 class="text-2xl font-black mb-6 text-sea-blue flex items-center gap-3">🏨 فندق 4 نجوم</h3>
                     <input type="file" id="file-hotel" class="hidden" onchange="uploadImage('hotel', this)">
-                    <label for="file-hotel" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-3xl cursor-pointer hover:bg-slate-50 hover:border-turquoise transition-all">
-                        <span class="text-4xl mb-2">📷</span>
+                    <label for="file-hotel" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-3xl cursor-pointer hover:bg-slate-50 hover:border-sea-blue transition-all group">
+                        <span class="text-4xl mb-2 group-hover:scale-110 transition">📷</span>
                         <span class="font-bold text-slate-500">إضافة صورة جديدة</span>
                     </label>
                     <div id="gallery-hotel" class="grid grid-cols-3 gap-4 mt-8"></div>
                 </div>
                 <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-50">
-                    <h3 class="text-2xl font-black mb-6 text-turquoise flex items-center gap-3">🏖️ شواطئ فيروزية</h3>
+                    <h3 class="text-2xl font-black mb-6 text-sea-blue flex items-center gap-3">🏖️ شواطئ فيروزية</h3>
                     <input type="file" id="file-beaches" class="hidden" onchange="uploadImage('beaches', this)">
-                    <label for="file-beaches" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-3xl cursor-pointer hover:bg-slate-50 hover:border-turquoise transition-all">
+                    <label for="file-beaches" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-3xl cursor-pointer hover:bg-slate-50 hover:border-sea-blue transition-all">
                         <span class="text-4xl mb-2">📷</span>
                         <span class="font-bold text-slate-500">إضافة صورة جديدة</span>
                     </label>
                     <div id="gallery-beaches" class="grid grid-cols-3 gap-4 mt-8"></div>
                 </div>
                 <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-50">
-                    <h3 class="text-2xl font-black mb-6 text-turquoise flex items-center gap-3">🧖‍♂️ حمامات معدنية</h3>
+                    <h3 class="text-2xl font-black mb-6 text-sea-blue flex items-center gap-3">🧖‍♂️ حمامات معدنية</h3>
                     <input type="file" id="file-baths" class="hidden" onchange="uploadImage('baths', this)">
-                    <label for="file-baths" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-3xl cursor-pointer hover:bg-slate-50 hover:border-turquoise transition-all">
+                    <label for="file-baths" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-3xl cursor-pointer hover:bg-slate-50 hover:border-sea-blue transition-all">
                         <span class="text-4xl mb-2">📷</span>
                         <span class="font-bold text-slate-500">إضافة صورة جديدة</span>
                     </label>
                     <div id="gallery-baths" class="grid grid-cols-3 gap-4 mt-8"></div>
                 </div>
                 <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-50">
-                    <h3 class="text-2xl font-black mb-6 text-turquoise flex items-center gap-3">🎢 ألعاب مائية وملاهي</h3>
+                    <h3 class="text-2xl font-black mb-6 text-sea-blue flex items-center gap-3">🎢 ألعاب مائية وملاهي</h3>
                     <input type="file" id="file-park" class="hidden" onchange="uploadImage('park', this)">
-                    <label for="file-park" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-3xl cursor-pointer hover:bg-slate-50 hover:border-turquoise transition-all">
+                    <label for="file-park" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-3xl cursor-pointer hover:bg-slate-50 hover:border-sea-blue transition-all">
                         <span class="text-4xl mb-2">📷</span>
                         <span class="font-bold text-slate-500">إضافة صورة جديدة</span>
                     </label>
@@ -148,14 +152,16 @@
         }
 
         async function loadParticipants() {
-            const res = await fetch('/api/participants', { headers: { 'X-Admin-Token': ADMIN_TOKEN } });
-            allParticipants = await res.json();
-            renderList();
+            try {
+                const res = await fetch('/api/participants', { headers: { 'X-Admin-Token': ADMIN_TOKEN } });
+                allParticipants = await res.json();
+                renderList();
+            } catch (e) { console.error(e); }
         }
 
         function filterList(status) {
             currentFilter = status;
-            document.querySelectorAll('#participantsSection button[id^="tab-"]').forEach(b => b.classList.remove('tab-active', 'bg-white', 'shadow-sm', 'text-turquoise'));
+            document.querySelectorAll('#participantsSection button[id^="tab-"]').forEach(b => b.classList.remove('tab-active', 'bg-white', 'shadow-sm', 'text-sea-blue'));
             document.getElementById('tab-' + status).classList.add('tab-active', 'bg-white', 'shadow-sm');
             renderList();
         }
@@ -193,7 +199,7 @@
                 cell1.appendChild(nameDiv); cell1.appendChild(dateDiv);
 
                 const phoneDiv = document.createElement('div');
-                phoneDiv.className = 'font-bold text-turquoise';
+                phoneDiv.className = 'font-bold text-sea-blue';
                 phoneDiv.dir = 'ltr'; phoneDiv.textContent = p.phonenumber || p.phoneNumber;
                 const genderDiv = document.createElement('div');
                 genderDiv.className = 'text-xs text-slate-400';

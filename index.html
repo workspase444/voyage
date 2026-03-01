@@ -5,169 +5,275 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>رحلة الشرق الجزائري - استكشاف ورفاهية</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Tajawal:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
         :root {
-            --turquoise: #40E0D0;
-            --gold: #FFD700;
-            --dark: #0f172a;
+            --sea-blue-light: #e0f2fe;
+            --sea-blue: #0284c7;
+            --sea-blue-dark: #0c4a6e;
+            --sandy-gold: #fbbf24;
+            --sandy-gold-dark: #d97706;
+            --pure-white: #ffffff;
+            --soft-gray: #f8fafc;
         }
-        body { font-family: 'Cairo', sans-serif; scroll-behavior: smooth; background: #f8fafc; }
-        .bg-turquoise { background-color: var(--turquoise); }
-        .text-turquoise { color: var(--turquoise); }
-        .hero-gradient {
-            background: linear-gradient(rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.6)), url('https://images.unsplash.com/photo-1551882547-ff43c63faf76?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            scroll-behavior: smooth;
+            background-color: var(--soft-gray);
+            color: var(--sea-blue-dark);
+            opacity: 0;
+            animation: fadeIn 1s ease-in forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .bg-sea-blue { background-color: var(--sea-blue); }
+        .text-sea-blue { color: var(--sea-blue); }
+        .bg-sandy-gold { background-color: var(--sandy-gold); }
+        .text-sandy-gold { color: var(--sandy-gold); }
+
+        .hero-section {
+            background: linear-gradient(rgba(12, 74, 110, 0.7), rgba(12, 74, 110, 0.4)), url('https://images.unsplash.com/photo-1551882547-ff43c63faf76?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
             background-size: cover;
             background-position: center;
+            background-attachment: fixed;
         }
-        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
-        .feature-card:hover { transform: translateY(-10px); box-shadow: 0 20px 25px -5px rgba(64, 224, 208, 0.1), 0 10px 10px -5px rgba(64, 224, 208, 0.04); }
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(5px); }
-        .btn-premium { background: var(--gold); color: var(--dark); font-weight: bold; border-radius: 9999px; transition: all 0.3s ease; box-shadow: 0 4px 6px -1px rgba(255, 215, 0, 0.3); }
-        .btn-premium:hover { transform: scale(1.05); box-shadow: 0 10px 15px -3px rgba(255, 215, 0, 0.4); }
+
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(2, 132, 199, 0.1);
+        }
+
+        .feature-card {
+            background: var(--pure-white);
+            border-radius: 24px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(2, 132, 199, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 20px 25px -5px rgba(2, 132, 199, 0.1), 0 10px 10px -5px rgba(2, 132, 199, 0.04);
+            border-color: var(--sea-blue);
+        }
+
+        .btn-booking {
+            background: linear-gradient(135deg, var(--sandy-gold), var(--sandy-gold-dark));
+            color: var(--sea-blue-dark);
+            font-weight: 800;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 15px -3px rgba(217, 119, 6, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-booking:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(217, 119, 6, 0.4);
+            filter: brightness(1.1);
+        }
+
+        .input-modern {
+            background-color: var(--soft-gray);
+            border: 2px solid transparent;
+            border-radius: 14px;
+            padding: 12px 16px;
+            transition: all 0.3s ease;
+            width: 100%;
+            outline: none;
+        }
+
+        .input-modern:focus {
+            border-color: var(--sea-blue);
+            background-color: var(--pure-white);
+            box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.1);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(12, 74, 110, 0.95);
+            backdrop-filter: blur(8px);
+        }
+
+        .carousel-btn {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
+            transition: all 0.3s ease;
+        }
+
+        .carousel-btn:hover {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--sea-blue-dark);
+        }
     </style>
 </head>
-<body class="text-slate-900 overflow-x-hidden">
+<body class="overflow-x-hidden">
 
     <!-- Navbar -->
-    <nav class="fixed w-full z-50 glass transition-all duration-300" id="navbar">
+    <nav class="fixed w-full z-50 glass-nav transition-all duration-500" id="navbar">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="text-2xl font-black text-turquoise tracking-tighter">رحلة الشرق</div>
-            <div class="hidden md:flex space-x-reverse space-x-8 font-semibold">
-                <a href="#features" class="hover:text-turquoise transition">المميزات</a>
-                <a href="#register" class="btn-premium px-6 py-2">احجز مكانك</a>
+            <div class="text-2xl font-black text-sea-blue tracking-tight">رحلة الشرق</div>
+            <div class="hidden md:flex items-center space-x-reverse space-x-10">
+                <a href="#features" class="font-bold hover:text-sea-blue transition-colors">المميزات</a>
+                <a href="#register" class="btn-booking px-8 py-2.5 text-sm">احجز مكانك</a>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero-gradient h-screen flex items-center justify-center text-center text-white px-4">
-        <div class="max-w-4xl animate__animated animate__fadeInUp">
-            <span class="inline-block bg-turquoise/20 text-turquoise px-4 py-1 rounded-full text-sm font-bold mb-6 border border-turquoise/30">موسم صيف 2024</span>
-            <h1 class="text-5xl md:text-7xl font-black mb-8 leading-tight">اكتشف روعة الشرق الجزائري</h1>
-            <p class="text-xl md:text-2xl mb-12 text-slate-200 font-light max-w-2xl mx-auto">عيش التجربة في أجمل الشواطئ، الفنادق الفاخرة والمناظر الطبيعية الخلابة.</p>
-            <div class="flex flex-col md:flex-row gap-4 justify-center">
-                <a href="#register" class="btn-premium px-12 py-4 text-lg">ابدأ التسجيل الآن</a>
-                <a href="#features" class="bg-white/10 hover:bg-white/20 backdrop-blur px-12 py-4 rounded-full font-bold transition">استعرض المميزات</a>
+    <section class="hero-section h-screen flex items-center justify-center text-center text-white px-4 relative overflow-hidden">
+        <div class="max-w-4xl z-10 animate__animated animate__fadeInUp">
+            <span class="inline-block bg-sandy-gold/20 text-sandy-gold px-6 py-1.5 rounded-full text-sm font-black mb-8 border border-sandy-gold/30 backdrop-blur-sm">موسم صيف 2024</span>
+            <h1 class="text-5xl md:text-8xl font-black mb-8 leading-tight drop-shadow-2xl">اكتشف روعة <span class="text-sandy-gold">الشرق الجزائري</span></h1>
+            <p class="text-xl md:text-2xl mb-12 text-blue-50/90 font-medium max-w-2xl mx-auto leading-relaxed">عيش التجربة في أجمل الشواطئ، الفنادق الفاخرة والمناظر الطبيعية الخلابة.</p>
+            <div class="flex flex-col md:flex-row gap-6 justify-center">
+                <a href="#register" class="btn-booking px-14 py-5 text-xl">ابدأ التسجيل الآن</a>
+                <a href="#features" class="bg-white/10 hover:bg-white/20 backdrop-blur-md px-14 py-5 rounded-2xl font-bold transition-all border border-white/20">استعرض المميزات</a>
             </div>
         </div>
+        <!-- Decorative element -->
+        <div class="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-soft-gray to-transparent"></div>
     </section>
 
     <!-- Features Section -->
     <section id="features" class="py-32 container mx-auto px-6">
-        <div class="text-center mb-20 animate__animated animate__fadeIn">
-            <h2 class="text-4xl md:text-5xl font-black text-slate-900 mb-4">ماذا نوفر لك؟</h2>
-            <div class="h-1.5 w-24 bg-turquoise mx-auto rounded-full mb-6"></div>
-            <p class="text-slate-500 text-lg">نضمن لك عطلة استثنائية تجمع بين الراحة والمتعة</p>
+        <div class="text-center mb-24">
+            <h2 class="text-4xl md:text-6xl font-black text-slate-900 mb-6">ماذا نوفر لك؟</h2>
+            <div class="h-2 w-32 bg-sandy-gold mx-auto rounded-full mb-8 shadow-sm"></div>
+            <p class="text-slate-500 text-xl font-medium">نضمن لك عطلة استثنائية تجمع بين الراحة والمتعة</p>
         </div>
 
-        <div id="featuresGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div id="featuresGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
             <!-- Loaded Dynamically -->
         </div>
     </section>
 
     <!-- Modal Carousel -->
     <div id="imageModal" class="modal flex items-center justify-center p-4" onclick="this.style.display='none'">
-        <div class="max-w-5xl w-full bg-white rounded-[2rem] overflow-hidden shadow-2xl relative animate__animated animate__zoomIn" onclick="event.stopPropagation()">
-            <button class="absolute top-6 right-6 text-slate-900 text-3xl font-bold bg-white w-12 h-12 rounded-full flex items-center justify-center z-30 shadow-lg hover:bg-turquoise hover:text-white transition" onclick="document.getElementById('imageModal').style.display='none'">&times;</button>
+        <div class="max-w-6xl w-full bg-white rounded-[3rem] overflow-hidden shadow-2xl relative animate__animated animate__zoomIn" onclick="event.stopPropagation()">
+            <button class="absolute top-8 right-8 text-slate-900 text-3xl font-bold bg-white/90 w-12 h-12 rounded-2xl flex items-center justify-center z-30 shadow-2xl hover:bg-sandy-gold transition-all" onclick="document.getElementById('imageModal').style.display='none'">&times;</button>
 
-            <div class="relative h-[70vh] bg-slate-100 group">
-                <img id="modalImg" src="" class="w-full h-full object-cover transition-all duration-500">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+            <div class="relative h-[75vh] bg-slate-200 group">
+                <img id="modalImg" src="" class="w-full h-full object-cover transition-all duration-700">
 
-                <button onclick="prevImage()" class="absolute left-6 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white text-slate-900 w-14 h-14 rounded-full flex items-center justify-center text-3xl z-20 backdrop-blur transition opacity-0 group-hover:opacity-100">❮</button>
-                <button onclick="nextImage()" class="absolute right-6 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white text-slate-900 w-14 h-14 rounded-full flex items-center justify-center text-3xl z-20 backdrop-blur transition opacity-0 group-hover:opacity-100">❯</button>
+                <button onclick="prevImage()" class="carousel-btn absolute left-8 top-1/2 -translate-y-1/2 text-white w-16 h-16 rounded-2xl flex items-center justify-center text-4xl z-20 opacity-0 group-hover:opacity-100">❮</button>
+                <button onclick="nextImage()" class="carousel-btn absolute right-8 top-1/2 -translate-y-1/2 text-white w-16 h-16 rounded-2xl flex items-center justify-center text-4xl z-20 opacity-0 group-hover:opacity-100">❯</button>
             </div>
 
-            <div class="p-10 text-center relative">
-                <h3 id="modalTitle" class="text-3xl font-black text-slate-900 mb-2"></h3>
-                <p id="imageCounter" class="text-turquoise font-bold text-lg"></p>
+            <div class="p-12 text-center bg-white">
+                <h3 id="modalTitle" class="text-4xl font-black text-sea-blue-dark mb-3"></h3>
+                <p id="imageCounter" class="text-sea-blue font-black text-xl"></p>
             </div>
         </div>
     </div>
 
     <!-- Form Section -->
-    <section id="register" class="py-32 bg-slate-900 relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-96 h-96 bg-turquoise/10 rounded-full blur-3xl -mr-48 -mt-48"></div>
+    <section id="register" class="py-32 bg-sea-blue-dark relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+            <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <path d="M0 100 C 20 0 50 0 100 100 Z" fill="white"></path>
+            </svg>
+        </div>
+
         <div class="container mx-auto px-6 relative z-10">
-            <div class="max-w-4xl mx-auto glass rounded-[3rem] shadow-2xl overflow-hidden">
-                <div class="bg-turquoise p-12 text-white text-center">
-                    <h2 class="text-4xl font-black mb-4">انضم إلى الرحلة</h2>
-                    <p class="text-white/80">المقاعد محدودة، احجز مكانك الآن وسيتواصل معك فريقنا</p>
+            <div class="max-w-4xl mx-auto bg-white rounded-[4rem] shadow-2xl overflow-hidden border border-white/20">
+                <div class="bg-sea-blue p-16 text-white text-center">
+                    <h2 class="text-5xl font-black mb-6">انضم إلى الرحلة</h2>
+                    <p class="text-blue-100 text-lg font-medium">المقاعد محدودة، احجز مكانك الآن وسيتواصل معك فريقنا</p>
                 </div>
-                <form id="registrationForm" class="p-12 space-y-8 bg-white">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="space-y-2">
-                            <label class="font-bold text-slate-700">الاسم واللقب</label>
-                            <input type="text" name="fullName" required class="w-full p-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-turquoise transition outline-none">
+
+                <form id="registrationForm" class="p-12 md:p-20 space-y-10 bg-white">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                        <div class="space-y-3">
+                            <label class="font-black text-slate-700 mr-2">الاسم واللقب</label>
+                            <input type="text" name="fullName" required class="input-modern" placeholder="أدخل اسمك الكامل">
                         </div>
-                        <div class="space-y-2">
-                            <label class="font-bold text-slate-700">رقم الهاتف</label>
+                        <div class="space-y-3">
+                            <label class="font-black text-slate-700 mr-2">رقم الهاتف</label>
                             <div class="relative">
-                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold" dir="ltr">+213</span>
-                                <input type="tel" name="phoneNumber" required pattern="[567][0-9]{8}" placeholder="XXXXXXXXX" class="w-full pl-16 pr-4 p-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-turquoise transition outline-none dir-ltr" dir="ltr">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black border-r border-slate-200 pl-2 pr-2" dir="ltr">+213</span>
+                                <input type="tel" name="phoneNumber" required pattern="[567][0-9]{8}" placeholder="XXXXXXXXX" class="input-modern pl-20" dir="ltr">
                             </div>
                         </div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="space-y-2">
-                            <label class="font-bold text-slate-700">تاريخ الميلاد</label>
-                            <input type="date" name="birthDate" required class="w-full p-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-turquoise transition outline-none">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                        <div class="space-y-3">
+                            <label class="font-black text-slate-700 mr-2">تاريخ الميلاد</label>
+                            <input type="date" name="birthDate" required class="input-modern">
                         </div>
-                        <div class="space-y-2">
-                            <label class="font-bold text-slate-700">الجنس</label>
-                            <select name="gender" required class="w-full p-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-turquoise transition outline-none">
+                        <div class="space-y-3">
+                            <label class="font-black text-slate-700 mr-2">الجنس</label>
+                            <select name="gender" required class="input-modern appearance-none">
                                 <option value="ذكر">ذكر</option>
                                 <option value="أنثى">أنثى</option>
                             </select>
                         </div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="space-y-2">
-                            <label class="font-bold text-slate-700">مكان الميلاد</label>
-                            <input type="text" name="birthPlace" required class="w-full p-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-turquoise transition outline-none">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                        <div class="space-y-3">
+                            <label class="font-black text-slate-700 mr-2">مكان الميلاد</label>
+                            <input type="text" name="birthPlace" required class="input-modern" placeholder="أدخل مكان الميلاد">
                         </div>
-                        <div class="space-y-2">
-                            <label class="font-bold text-slate-700">مكان السكن الحالي</label>
-                            <input type="text" name="currentAddress" required class="w-full p-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-turquoise transition outline-none">
+                        <div class="space-y-3">
+                            <label class="font-black text-slate-700 mr-2">مكان السكن الحالي</label>
+                            <input type="text" name="currentAddress" required class="input-modern" placeholder="أدخل مكان السكن">
                         </div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="space-y-2">
-                            <label class="font-bold text-slate-700">نوع الوظيفة</label>
-                            <input type="text" name="jobType" required class="w-full p-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-turquoise transition outline-none">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                        <div class="space-y-3">
+                            <label class="font-black text-slate-700 mr-2">نوع الوظيفة</label>
+                            <input type="text" name="jobType" required class="input-modern" placeholder="ما هي مهنتك؟">
                         </div>
-                        <div class="space-y-2">
-                            <label class="font-bold text-slate-700">هل تجيد الإسعافات الأولية؟</label>
-                            <div class="flex space-x-reverse space-x-6 pt-2">
-                                <label class="flex items-center space-x-reverse space-x-2 cursor-pointer">
-                                    <input type="radio" name="firstAid" value="نعم" required class="w-5 h-5 text-turquoise focus:ring-turquoise">
-                                    <span>نعم</span>
+                        <div class="space-y-3">
+                            <label class="font-black text-slate-700 mr-2">هل تجيد الإسعافات الأولية؟</label>
+                            <div class="flex space-x-reverse space-x-8 pt-4">
+                                <label class="flex items-center space-x-reverse space-x-3 cursor-pointer group">
+                                    <input type="radio" name="firstAid" value="نعم" required class="w-6 h-6 text-sea-blue focus:ring-sea-blue border-slate-300">
+                                    <span class="font-bold group-hover:text-sea-blue transition">نعم</span>
                                 </label>
-                                <label class="flex items-center space-x-reverse space-x-2 cursor-pointer">
-                                    <input type="radio" name="firstAid" value="لا" class="w-5 h-5 text-turquoise focus:ring-turquoise">
-                                    <span>لا</span>
+                                <label class="flex items-center space-x-reverse space-x-3 cursor-pointer group">
+                                    <input type="radio" name="firstAid" value="لا" class="w-6 h-6 text-sea-blue focus:ring-sea-blue border-slate-300">
+                                    <span class="font-bold group-hover:text-sea-blue transition">لا</span>
                                 </label>
                             </div>
                         </div>
                     </div>
-                    <button type="submit" class="w-full btn-premium py-5 text-xl">إرسال البيانات وتأكيد الحجز</button>
+
+                    <button type="submit" class="w-full btn-booking py-6 text-2xl mt-8">إرسال البيانات وتأكيد الحجز</button>
                 </form>
-                <div id="successMessage" class="hidden p-20 text-center bg-white">
-                    <div class="w-24 h-24 bg-green-100 text-green-500 rounded-full flex items-center justify-center text-5xl mx-auto mb-8 animate__animated animate__bounceIn">✓</div>
-                    <h3 class="text-3xl font-black mb-4">تم الإرسال بنجاح!</h3>
-                    <p class="text-slate-500">شكراً لك، سنتواصل معك هاتفياً في غضون 24 ساعة.</p>
+
+                <div id="successMessage" class="hidden p-32 text-center bg-white">
+                    <div class="w-28 h-28 bg-green-50 text-green-500 rounded-[2rem] flex items-center justify-center text-6xl mx-auto mb-10 animate__animated animate__bounceIn">✓</div>
+                    <h3 class="text-4xl font-black mb-6 text-slate-900">تم الإرسال بنجاح!</h3>
+                    <p class="text-slate-500 text-xl font-medium">شكراً لك، سنتواصل معك هاتفياً في غضون 24 ساعة.</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="bg-slate-900 border-t border-white/5 py-12 text-center text-white/40 text-sm">
+    <footer class="bg-slate-950 py-20 text-center border-t border-white/5">
         <div class="container mx-auto px-6">
-            <p>© 2024 جميع الحقوق محفوظة لرحلة الشرق الجزائري</p>
-            <p class="mt-2">تم إنشاء الموقع وبرمجته بواسطة Jules - 2024</p>
+            <div class="text-3xl font-black text-sea-blue mb-8">رحلة الشرق الجزائري</div>
+            <p class="text-slate-500 font-medium mb-4">© 2024 جميع الحقوق محفوظة لرحلة الشرق الجزائري</p>
+            <p class="text-slate-600 text-sm">تم إنشاء الموقع وبرمجته بواسطة Jules - 2024</p>
         </div>
     </footer>
 
@@ -178,28 +284,35 @@
 
         window.addEventListener('scroll', () => {
             const nav = document.getElementById('navbar');
-            if (window.scrollY > 50) nav.classList.add('shadow-xl', 'py-2');
-            else nav.classList.remove('shadow-xl', 'py-4');
+            if (window.scrollY > 80) {
+                nav.classList.add('shadow-2xl', 'py-2', 'bg-white/95');
+                nav.classList.remove('py-4', 'bg-white/80');
+            } else {
+                nav.classList.remove('shadow-2xl', 'py-2', 'bg-white/95');
+                nav.classList.add('py-4', 'bg-white/80');
+            }
         });
 
         async function loadFeatures() {
-            const res = await fetch('/api/features');
-            featureData = await res.json();
-            const grid = document.getElementById('featuresGrid');
-            grid.innerHTML = '';
-            const icons = { hotel: '🏨', beaches: '🏖️', baths: '🧖‍♂️', park: '🎢' };
+            try {
+                const res = await fetch('/api/features');
+                featureData = await res.json();
+                const grid = document.getElementById('featuresGrid');
+                grid.innerHTML = '';
+                const icons = { hotel: '🏨', beaches: '🏖️', baths: '🧖‍♂️', park: '🎢' };
 
-            Object.entries(featureData).forEach(([key, feature]) => {
-                const card = document.createElement('div');
-                card.className = 'feature-card bg-white p-10 rounded-[2.5rem] shadow-sm border border-slate-100 text-center transition-all cursor-pointer group';
-                card.onclick = () => openCarousel(key);
-                card.innerHTML = `
-                    <div class="w-20 h-20 bg-turquoise/5 text-4xl flex items-center justify-center rounded-3xl mx-auto mb-6 group-hover:bg-turquoise group-hover:text-white transition-colors duration-500">${icons[key]}</div>
-                    <h3 class="text-2xl font-black mb-3 text-slate-800">${feature.title}</h3>
-                    <p class="text-slate-400 font-medium">${feature.images.length} صور متاحة</p>
-                `;
-                grid.appendChild(card);
-            });
+                Object.entries(featureData).forEach(([key, feature]) => {
+                    const card = document.createElement('div');
+                    card.className = 'feature-card p-12 text-center cursor-pointer group animate__animated animate__fadeInUp';
+                    card.onclick = () => openCarousel(key);
+                    card.innerHTML = `
+                        <div class="w-24 h-24 bg-sea-blue/5 text-5xl flex items-center justify-center rounded-[2rem] mx-auto mb-8 group-hover:bg-sea-blue group-hover:text-white transition-all duration-500 group-hover:rotate-6 shadow-sm">${icons[key]}</div>
+                        <h3 class="text-2xl font-black mb-4 text-slate-800 group-hover:text-sea-blue transition-colors">${feature.title}</h3>
+                        <p class="text-sea-blue font-bold text-sm bg-sea-blue/5 py-2 px-4 rounded-full inline-block group-hover:bg-sea-blue group-hover:text-white transition-all">${feature.images.length} صور متاحة</p>
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch (e) { console.error(e); }
         }
 
         function openCarousel(key) {
@@ -219,7 +332,7 @@
             setTimeout(() => {
                 imgElement.src = images[currentImageIndex];
                 imgElement.style.opacity = '1';
-            }, 200);
+            }, 300);
             document.getElementById('modalTitle').textContent = featureData[currentCategory].title;
             document.getElementById('imageCounter').textContent = `صورة ${currentImageIndex + 1} من ${images.length}`;
         }
@@ -240,14 +353,26 @@
             const formData = new FormData(this);
             const data = Object.fromEntries(formData.entries());
             data.phoneNumber = '+213' + data.phoneNumber;
-            const res = await fetch('/api/register', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(data)
-            });
-            if (res.ok) {
-                this.classList.add('hidden');
-                document.getElementById('successMessage').classList.remove('hidden');
-                document.getElementById('register').scrollIntoView();
+
+            const btn = this.querySelector('button[type="submit"]');
+            const originalText = btn.innerText;
+            btn.innerText = 'جاري الإرسال...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/register', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                if (res.ok) {
+                    this.classList.add('hidden');
+                    document.getElementById('successMessage').classList.remove('hidden');
+                    document.getElementById('register').scrollIntoView();
+                }
+            } catch (e) {
+                alert('حدث خطأ في الاتصال، يرجى المحاولة لاحقاً');
+                btn.innerText = originalText;
+                btn.disabled = false;
             }
         };
 

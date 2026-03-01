@@ -8,9 +8,13 @@ const fs = require('fs-extra');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// CONFIG: Use environment variables for production security
-const DATABASE_URL = process.env.DATABASE_URL || "postgresql://postgres.fptkwyxxazlomleytgpd:_FixZ4A%2FkbCa7AF@aws-1-eu-west-1.pooler.supabase.com:6543/postgres";
+// CONFIG: Production security using Environment Variables
+const DATABASE_URL = process.env.DATABASE_URL;
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'admin-dashboard-access-key-777';
+
+if (!DATABASE_URL) {
+    console.error("FATAL: DATABASE_URL environment variable is not set.");
+}
 
 // PostgreSQL Setup
 const pool = new Pool({
@@ -20,6 +24,7 @@ const pool = new Pool({
 
 // Initialize database tables
 async function initDb() {
+    if (!DATABASE_URL) return;
     try {
         await pool.query(`CREATE TABLE IF NOT EXISTS participants (
             id SERIAL PRIMARY KEY,
@@ -42,14 +47,8 @@ async function initDb() {
             image_data TEXT
         )`);
 
-        try {
-            await pool.query(`ALTER TABLE participants ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending'`);
-        } catch (e) {}
-
-        // Ensure image_data column exists (migration)
-        try {
-            await pool.query(`ALTER TABLE feature_images ADD COLUMN IF NOT EXISTS image_data TEXT`);
-        } catch (e) {}
+        try { await pool.query(`ALTER TABLE participants ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending'`); } catch (e) {}
+        try { await pool.query(`ALTER TABLE feature_images ADD COLUMN IF NOT EXISTS image_data TEXT`); } catch (e) {}
 
         console.log("PostgreSQL database initialized.");
     } catch (err) {
@@ -191,7 +190,7 @@ app.delete('/api/delete-image/:id', adminAuth, async (req, res) => {
     }
 });
 
-// Admin Route
+// Admin Route - Serves admin.html and injects the token
 app.get(`/${ADMIN_TOKEN}`, (req, res) => {
     let content = fs.readFileSync(path.join(__dirname, 'admin.html'), 'utf8');
     content = content.replace('const ADMIN_TOKEN = \'\';', `const ADMIN_TOKEN = '${ADMIN_TOKEN}';`);
