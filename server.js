@@ -12,10 +12,6 @@ const PORT = process.env.PORT || 3000;
 const DATABASE_URL = process.env.DATABASE_URL || "postgresql://postgres.fptkwyxxazlomleytgpd:_FixZ4A%2FkbCa7AF@aws-1-eu-west-1.pooler.supabase.com:6543/postgres";
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'admin-dashboard-access-key-777';
 
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, 'uploads');
-fs.ensureDirSync(uploadsDir);
-
 // PostgreSQL Setup
 const pool = new Pool({
     connectionString: DATABASE_URL,
@@ -42,11 +38,17 @@ async function initDb() {
         await pool.query(`CREATE TABLE IF NOT EXISTS feature_images (
             id SERIAL PRIMARY KEY,
             category TEXT,
-            filename TEXT
+            filename TEXT,
+            image_data TEXT
         )`);
 
         try {
             await pool.query(`ALTER TABLE participants ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending'`);
+        } catch (e) {}
+
+        // Ensure image_data column exists (migration)
+        try {
+            await pool.query(`ALTER TABLE feature_images ADD COLUMN IF NOT EXISTS image_data TEXT`);
         } catch (e) {}
 
         console.log("PostgreSQL database initialized.");
@@ -56,29 +58,23 @@ async function initDb() {
 }
 initDb();
 
-// Multer Storage Configuration
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, 'uploads/'),
-    filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
-});
-
+// Multer Storage (Memory storage for Base64 conversion)
 const upload = multer({
-    storage,
-    limits: { fileSize: 5 * 1024 * 1024 },
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit
     fileFilter: (req, file, cb) => {
         const filetypes = /jpeg|jpg|png|webp/;
         const mimetype = filetypes.test(file.mimetype);
-        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-        if (mimetype && extname) return cb(null, true);
-        cb(new Error("Error: Images only!"));
+        if (mimetype) return cb(null, true);
+        cb(new Error("Images only!"));
     }
 });
 
 // Middleware
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '5mb' }));
 
 // SECURITY: Prevent direct access to sensitive system files
-const protectedFiles = ['server.js', 'package.json', 'package-lock.json', '.gitignore', 'admin.html', 'voyage.db', 'README.md'];
+const protectedFiles = ['server.js', 'package.json', 'package-lock.json', '.gitignore', 'admin.html', 'README.md'];
 app.use((req, res, next) => {
     const requestedFile = path.basename(req.path);
     if (protectedFiles.includes(requestedFile)) {
@@ -93,9 +89,8 @@ const adminAuth = (req, res, next) => {
     else res.status(401).json({ error: 'Unauthorized' });
 };
 
-// Serve static files
+// Serve static files from root
 app.use(express.static(__dirname));
-app.use('/uploads', express.static(uploadsDir));
 
 // API: Register (Public)
 app.post('/api/register', async (req, res) => {
@@ -142,14 +137,14 @@ app.delete('/api/participants/:id', adminAuth, async (req, res) => {
     }
 });
 
-// API: Upload Feature Images (Admin Protected)
+// API: Upload Feature Images as Base64 (Admin Protected)
 app.post('/api/upload-image', adminAuth, upload.single('image'), async (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     const { category } = req.body;
-    const filename = req.file.filename;
+    const base64Data = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
     try {
-        const { rows } = await pool.query(`INSERT INTO feature_images (category, filename) VALUES ($1, $2) RETURNING id`, [category, filename]);
-        res.json({ message: 'Uploaded successfully', filename, id: rows[0].id });
+        const { rows } = await pool.query(`INSERT INTO feature_images (category, filename, image_data) VALUES ($1, $2, $3) RETURNING id`, [category, req.file.originalname, base64Data]);
+        res.json({ message: 'Uploaded successfully', id: rows[0].id });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -158,7 +153,7 @@ app.post('/api/upload-image', adminAuth, upload.single('image'), async (req, res
 // API: Get All Feature Images with IDs (Admin Protected)
 app.get('/api/admin-features', adminAuth, async (req, res) => {
     try {
-        const { rows } = await pool.query(`SELECT * FROM feature_images`);
+        const { rows } = await pool.query(`SELECT id, category, image_data FROM feature_images`);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -168,7 +163,7 @@ app.get('/api/admin-features', adminAuth, async (req, res) => {
 // API: Get Feature Images grouped (Public)
 app.get('/api/features', async (req, res) => {
     try {
-        const { rows } = await pool.query(`SELECT * FROM feature_images`);
+        const { rows } = await pool.query(`SELECT category, image_data FROM feature_images`);
         const features = {
             hotel: { title: "فندق 4 نجوم", images: [] },
             beaches: { title: "شواطئ فيروزية", images: [] },
@@ -177,7 +172,7 @@ app.get('/api/features', async (req, res) => {
         };
         rows.forEach(row => {
             if (features[row.category]) {
-                features[row.category].images.push(`/uploads/${row.filename}`);
+                features[row.category].images.push(row.image_data);
             }
         });
         res.json(features);
@@ -189,23 +184,16 @@ app.get('/api/features', async (req, res) => {
 // API: Delete Image (Admin Protected)
 app.delete('/api/delete-image/:id', adminAuth, async (req, res) => {
     try {
-        const { rows } = await pool.query(`SELECT filename FROM feature_images WHERE id = $1`, [req.params.id]);
-        if (rows.length > 0) {
-            await fs.remove(path.join(uploadsDir, rows[0].filename)).catch(err => console.error(err));
-            await pool.query(`DELETE FROM feature_images WHERE id = $1`, [req.params.id]);
-            res.json({ message: 'Deleted' });
-        } else {
-            res.status(404).json({ error: 'Not found' });
-        }
+        await pool.query(`DELETE FROM feature_images WHERE id = $1`, [req.params.id]);
+        res.json({ message: 'Deleted' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// Admin Route - Serves admin.html securely and injects the token
+// Admin Route
 app.get(`/${ADMIN_TOKEN}`, (req, res) => {
     let content = fs.readFileSync(path.join(__dirname, 'admin.html'), 'utf8');
-    // Inject the current token into the HTML so the frontend can use it
     content = content.replace('const ADMIN_TOKEN = \'\';', `const ADMIN_TOKEN = '${ADMIN_TOKEN}';`);
     res.send(content);
 });
