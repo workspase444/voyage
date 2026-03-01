@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>رحلة الشرق الجزائري - رفاهية واستكشاف</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700&family=Tajawal:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Cairo', 'Tajawal', sans-serif;
+            background-color: #ffffff;
+        }
+        .bg-turquoise { background-color: #40E0D0; }
+        .text-turquoise { color: #40E0D0; }
+        .bg-gold { background-color: #FFD700; }
+        .text-gold { color: #FFD700; }
+        .border-gold { border-color: #FFD700; }
+        .hero-section {
+            background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1551882547-ff43c63faf76?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+        }
+        .modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 80%;
+            border-radius: 15px;
+            margin-top: 5%;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Modal for viewing images -->
+    <div id="imageModal" class="modal flex items-center justify-center p-4" onclick="this.style.display='none'">
+        <div class="max-w-4xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl relative" onclick="event.stopPropagation()">
+            <button class="absolute top-4 right-4 text-gray-800 text-3xl font-bold bg-white/80 w-10 h-10 rounded-full flex items-center justify-center z-10" onclick="document.getElementById('imageModal').style.display='none'">&times;</button>
+            <img id="modalImg" src="" class="w-full h-[60vh] object-cover">
+            <div class="p-8 text-center">
+                <h3 id="modalTitle" class="text-2xl font-bold text-turquoise"></h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header / Nav -->
+    <header class="fixed w-full z-50 bg-white/90 backdrop-blur-sm shadow-sm">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold text-turquoise">رحلة الشرق الجزائري</div>
+            <nav class="hidden md:flex space-x-reverse space-x-8">
+                <a href="#features" class="hover:text-turquoise transition">المميزات</a>
+                <a href="#register" class="hover:text-turquoise transition">سجل الآن</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section h-screen flex items-center justify-center text-center text-white pt-20">
+        <div class="px-4">
+            <h1 class="text-4xl md:text-6xl font-bold mb-6">اكتشف سحر الشرق الجزائري</h1>
+            <p class="text-xl md:text-2xl mb-10 max-w-2xl mx-auto">رحلة العمر بانتظارك.. رفاهية، استرخاء، ومغامرة في أجمل شواطئ وجبال الجزائر الشرقية.</p>
+            <a href="#register" class="bg-gold hover:bg-yellow-500 text-gray-900 font-bold py-3 px-10 rounded-full transition transform hover:scale-105 inline-block">سجل الآن</a>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center mb-16 text-turquoise">ماذا ينتظرك في هذه الرحلة؟</h2>
+            <div id="featuresGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+                <!-- Features will be loaded dynamically -->
+            </div>
+            <p class="text-center mt-10 text-gray-500 italic">اضغط على أي ميزة لمشاهدة الصور</p>
+        </div>
+    </section>
+
+    <!-- Registration Form Section -->
+    <section id="register" class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="max-w-3xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+                <div class="bg-turquoise p-8 text-white text-center">
+                    <h2 class="text-3xl font-bold">احجز مكانك الآن</h2>
+                    <p class="mt-2">يرجى ملء الاستمارة بدقة وسنتصل بك قريباً</p>
+                </div>
+                <form id="registrationForm" class="p-8 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-gray-700 mb-2" for="fullName">الاسم واللقب</label>
+                            <input type="text" id="fullName" name="fullName" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-turquoise focus:ring-2 focus:ring-turquoise outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2" for="phoneNumber">رقم الهاتف</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dir-ltr" dir="ltr">+213</span>
+                                <input type="tel" id="phoneNumber" name="phoneNumber" required pattern="[567][0-9]{8}" placeholder="XXXXXXXXX" class="w-full pl-16 pr-4 py-3 rounded-xl border border-gray-300 focus:border-turquoise focus:ring-2 focus:ring-turquoise outline-none transition dir-ltr" dir="ltr">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-gray-700 mb-2" for="birthDate">تاريخ الميلاد</label>
+                            <input type="date" id="birthDate" name="birthDate" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-turquoise focus:ring-2 focus:ring-turquoise outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2">الجنس</label>
+                            <select id="gender" name="gender" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-turquoise focus:ring-2 focus:ring-turquoise outline-none transition">
+                                <option value="">اختر...</option>
+                                <option value="ذكر">ذكر</option>
+                                <option value="أنثى">أنثى</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-gray-700 mb-2" for="birthPlace">مكان الميلاد</label>
+                            <input type="text" id="birthPlace" name="birthPlace" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-turquoise focus:ring-2 focus:ring-turquoise outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2" for="currentAddress">مكان السكن الحالي</label>
+                            <input type="text" id="currentAddress" name="currentAddress" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-turquoise focus:ring-2 focus:ring-turquoise outline-none transition">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-gray-700 mb-2" for="jobType">نوع الوظيفة</label>
+                            <input type="text" id="jobType" name="jobType" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-turquoise focus:ring-2 focus:ring-turquoise outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2">هل تجيد الإسعافات الأولية؟</label>
+                            <div class="flex space-x-reverse space-x-6 pt-3">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="firstAid" value="نعم" required class="w-5 h-5 text-turquoise focus:ring-turquoise">
+                                    <span class="mr-2">نعم</span>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="firstAid" value="لا" class="w-5 h-5 text-turquoise focus:ring-turquoise">
+                                    <span class="mr-2">لا</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-gold hover:bg-yellow-500 text-gray-900 font-bold py-4 rounded-xl transition transform hover:scale-[1.02]">إرسال البيانات</button>
+                </form>
+                <div id="successMessage" class="hidden p-8 text-center text-green-600 font-bold">
+                    <div class="text-5xl mb-4">✅</div>
+                    تم إرسال بياناتك بنجاح! سنتواصل معك قريباً لتأكيد حجزك.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-10 text-center">
+        <p>© 2024 رحلة الشرق الجزائري للسياحة والأسفار. جميع الحقوق محفوظة.</p>
+    </footer>
+
+    <script>
+        let featureData = {};
+
+        async function loadFeatures() {
+            const res = await fetch('/api/features');
+            featureData = await res.json();
+            const grid = document.getElementById('featuresGrid');
+            grid.innerHTML = '';
+
+            const icons = { hotel: '🏨', beaches: '🏖️', baths: '🧖‍♂️', park: '🎢' };
+
+            Object.entries(featureData).forEach(([key, feature]) => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-8 rounded-2xl shadow-lg text-center hover:shadow-xl transition cursor-pointer transform hover:-translate-y-2';
+                card.onclick = () => openModal(key);
+                card.innerHTML = `
+                    <div class="text-4xl mb-4">${icons[key]}</div>
+                    <h3 class="text-xl font-bold mb-3">${feature.title}</h3>
+                    <p class="text-gray-600">اضغط لرؤية الصور والتفاصيل</p>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function openModal(key) {
+            const feature = featureData[key];
+            document.getElementById('modalImg').src = feature.image;
+            document.getElementById('modalTitle').textContent = feature.title;
+            document.getElementById('imageModal').style.display = 'flex';
+        }
+
+        document.getElementById('registrationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            data.phoneNumber = '+213' + data.phoneNumber;
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                if (response.ok) {
+                    this.classList.add('hidden');
+                    document.getElementById('successMessage').classList.remove('hidden');
+                } else {
+                    alert('خطأ في الإرسال');
+                }
+            } catch (error) {
+                alert('فشل الاتصال');
+            }
+        });
+
+        loadFeatures();
+    </script>
+</body>
+</html>
