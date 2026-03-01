@@ -31,25 +31,26 @@
             height: 100%;
             background-color: rgba(0,0,0,0.9);
         }
-        .modal-content {
-            margin: auto;
-            display: block;
-            max-width: 90%;
-            max-height: 80%;
-            border-radius: 15px;
-            margin-top: 5%;
-        }
     </style>
 </head>
 <body class="text-gray-800">
 
-    <!-- Modal for viewing images -->
+    <!-- Modal for Image Carousel -->
     <div id="imageModal" class="modal flex items-center justify-center p-4" onclick="this.style.display='none'">
         <div class="max-w-4xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl relative" onclick="event.stopPropagation()">
-            <button class="absolute top-4 right-4 text-gray-800 text-3xl font-bold bg-white/80 w-10 h-10 rounded-full flex items-center justify-center z-10" onclick="document.getElementById('imageModal').style.display='none'">&times;</button>
-            <img id="modalImg" src="" class="w-full h-[60vh] object-cover">
-            <div class="p-8 text-center">
-                <h3 id="modalTitle" class="text-2xl font-bold text-turquoise"></h3>
+            <button class="absolute top-4 right-4 text-gray-800 text-3xl font-bold bg-white/80 w-10 h-10 rounded-full flex items-center justify-center z-20" onclick="document.getElementById('imageModal').style.display='none'">&times;</button>
+
+            <div class="relative h-[60vh] bg-gray-200">
+                <img id="modalImg" src="" class="w-full h-full object-cover transition-opacity duration-300">
+
+                <!-- Carousel Controls -->
+                <button onclick="prevImage()" class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/50 hover:bg-white text-gray-800 w-12 h-12 rounded-full flex items-center justify-center text-2xl z-10">❮</button>
+                <button onclick="nextImage()" class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/50 hover:bg-white text-gray-800 w-12 h-12 rounded-full flex items-center justify-center text-2xl z-10">❯</button>
+            </div>
+
+            <div class="p-8 text-center bg-white">
+                <h3 id="modalTitle" class="text-2xl font-bold text-turquoise mb-2"></h3>
+                <p id="imageCounter" class="text-gray-500 text-sm"></p>
             </div>
         </div>
     </div>
@@ -79,9 +80,9 @@
         <div class="container mx-auto px-6">
             <h2 class="text-3xl font-bold text-center mb-16 text-turquoise">ماذا ينتظرك في هذه الرحلة؟</h2>
             <div id="featuresGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-                <!-- Features will be loaded dynamically -->
+                <!-- Features loaded dynamically -->
             </div>
-            <p class="text-center mt-10 text-gray-500 italic">اضغط على أي ميزة لمشاهدة الصور</p>
+            <p class="text-center mt-10 text-gray-500 italic">اضغط على أي ميزة لاستعراض ألبوم الصور</p>
         </div>
     </section>
 
@@ -171,6 +172,8 @@
 
     <script>
         let featureData = {};
+        let currentCategory = '';
+        let currentImageIndex = 0;
 
         async function loadFeatures() {
             const res = await fetch('/api/features');
@@ -183,45 +186,68 @@
             Object.entries(featureData).forEach(([key, feature]) => {
                 const card = document.createElement('div');
                 card.className = 'bg-white p-8 rounded-2xl shadow-lg text-center hover:shadow-xl transition cursor-pointer transform hover:-translate-y-2';
-                card.onclick = () => openModal(key);
+                card.onclick = () => openCarousel(key);
                 card.innerHTML = `
                     <div class="text-4xl mb-4">${icons[key]}</div>
                     <h3 class="text-xl font-bold mb-3">${feature.title}</h3>
-                    <p class="text-gray-600">اضغط لرؤية الصور والتفاصيل</p>
+                    <p class="text-gray-600">${feature.images.length} صور متوفرة</p>
                 `;
                 grid.appendChild(card);
             });
         }
 
-        function openModal(key) {
+        function openCarousel(key) {
             const feature = featureData[key];
-            document.getElementById('modalImg').src = feature.image;
-            document.getElementById('modalTitle').textContent = feature.title;
+            if (!feature.images || feature.images.length === 0) {
+                alert('لا توجد صور متوفرة لهذا القسم حالياً.');
+                return;
+            }
+            currentCategory = key;
+            currentImageIndex = 0;
+            updateModalContent();
             document.getElementById('imageModal').style.display = 'flex';
         }
 
-        document.getElementById('registrationForm').addEventListener('submit', async function(e) {
+        function updateModalContent() {
+            const images = featureData[currentCategory].images;
+            const imgElement = document.getElementById('modalImg');
+            imgElement.style.opacity = '0';
+            setTimeout(() => {
+                imgElement.src = images[currentImageIndex];
+                imgElement.style.opacity = '1';
+            }, 200);
+
+            document.getElementById('modalTitle').textContent = featureData[currentCategory].title;
+            document.getElementById('imageCounter').textContent = `${currentImageIndex + 1} / ${images.length}`;
+        }
+
+        function nextImage() {
+            const images = featureData[currentCategory].images;
+            currentImageIndex = (currentImageIndex + 1) % images.length;
+            updateModalContent();
+        }
+
+        function prevImage() {
+            const images = featureData[currentCategory].images;
+            currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+            updateModalContent();
+        }
+
+        document.getElementById('registrationForm').onsubmit = async function(e) {
             e.preventDefault();
             const formData = new FormData(this);
             const data = Object.fromEntries(formData.entries());
             data.phoneNumber = '+213' + data.phoneNumber;
-
-            try {
-                const response = await fetch('/api/register', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(data)
-                });
-                if (response.ok) {
-                    this.classList.add('hidden');
-                    document.getElementById('successMessage').classList.remove('hidden');
-                } else {
-                    alert('خطأ في الإرسال');
-                }
-            } catch (error) {
-                alert('فشل الاتصال');
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            if (response.ok) {
+                this.classList.add('hidden');
+                document.getElementById('successMessage').classList.remove('hidden');
             }
-        });
+        };
 
         loadFeatures();
     </script>
