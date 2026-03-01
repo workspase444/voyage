@@ -1,56 +1,80 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 const multer = require('multer');
 const fs = require('fs-extra');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ADMIN_TOKEN = 'admin-dashboard-access-key-777';
+
+// CONFIG: Use environment variables for production security
+const DATABASE_URL = process.env.DATABASE_URL || "postgresql://postgres.fptkwyxxazlomleytgpd:_FixZ4A%2FkbCa7AF@aws-1-eu-west-1.pooler.supabase.com:6543/postgres";
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'admin-dashboard-access-key-777';
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, 'uploads');
 fs.ensureDirSync(uploadsDir);
 
-// Database Setup
-const db = new sqlite3.Database(path.join(__dirname, 'voyage.db'));
-
-db.serialize(() => {
-    db.run(`CREATE TABLE IF NOT EXISTS participants (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        fullName TEXT,
-        phoneNumber TEXT,
-        birthDate TEXT,
-        gender TEXT,
-        birthPlace TEXT,
-        currentAddress TEXT,
-        jobType TEXT,
-        firstAid TEXT,
-        timestamp TEXT
-    )`);
-
-    db.run(`CREATE TABLE IF NOT EXISTS feature_images (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        category TEXT,
-        filename TEXT
-    )`);
+// PostgreSQL Setup
+const pool = new Pool({
+    connectionString: DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
 });
 
-// Multer Storage Configuration
+// Initialize database tables
+async function initDb() {
+    try {
+        await pool.query(`CREATE TABLE IF NOT EXISTS participants (
+            id SERIAL PRIMARY KEY,
+            fullName TEXT,
+            phoneNumber TEXT,
+            birthDate TEXT,
+            gender TEXT,
+            birthPlace TEXT,
+            currentAddress TEXT,
+            jobType TEXT,
+            firstAid TEXT,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`);
+
+        await pool.query(`CREATE TABLE IF NOT EXISTS feature_images (
+            id SERIAL PRIMARY KEY,
+            category TEXT,
+            filename TEXT
+        )`);
+        console.log("PostgreSQL database initialized.");
+    } catch (err) {
+        console.error("Database initialization error:", err);
+    }
+}
+initDb();
+
+// Multer Storage Configuration with Validation
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, 'uploads/'),
     filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
 });
-const upload = multer({ storage });
+
+const upload = multer({
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: (req, file, cb) => {
+        const filetypes = /jpeg|jpg|png|webp/;
+        const mimetype = filetypes.test(file.mimetype);
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+        if (mimetype && extname) return cb(null, true);
+        cb(new Error("Error: File upload only supports images (jpeg, jpg, png, webp)"));
+    }
+});
 
 // Middleware
 app.use(bodyParser.json());
 
-// SECURITY: Prevent direct access to sensitive files
-const protectedFiles = ['voyage.db', 'server.js', 'package.json', 'package-lock.json', '.gitignore', 'admin.html'];
+// SECURITY: Prevent direct access to sensitive system files
+const protectedFiles = ['server.js', 'package.json', 'package-lock.json', '.gitignore', 'admin.html', 'voyage.db', 'README.md'];
 app.use((req, res, next) => {
-    const requestedFile = path.basename(req.url);
+    const requestedFile = path.basename(req.path);
     if (protectedFiles.includes(requestedFile)) {
         return res.status(403).send('Access Denied');
     }
@@ -67,78 +91,91 @@ const adminAuth = (req, res, next) => {
 app.use(express.static(__dirname));
 app.use('/uploads', express.static(uploadsDir));
 
-// API: Register
-app.post('/api/register', (req, res) => {
+// API: Register (Public)
+app.post('/api/register', async (req, res) => {
     const p = req.body;
-    const stmt = db.prepare(`INSERT INTO participants (fullName, phoneNumber, birthDate, gender, birthPlace, currentAddress, jobType, firstAid, timestamp) VALUES (?,?,?,?,?,?,?,?,?)`);
-    stmt.run(p.fullName, p.phoneNumber, p.birthDate, p.gender, p.birthPlace, p.currentAddress, p.jobType, p.firstAid, new Date().toISOString(), (err) => {
-        if (err) res.status(500).json({ error: err.message });
-        else res.status(201).json({ message: 'Success' });
-    });
-    stmt.finalize();
+    try {
+        await pool.query(
+            `INSERT INTO participants (fullName, phoneNumber, birthDate, gender, birthPlace, currentAddress, jobType, firstAid) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+            [p.fullName, p.phoneNumber, p.birthDate, p.gender, p.birthPlace, p.currentAddress, p.jobType, p.firstAid]
+        );
+        res.status(201).json({ message: 'Success' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-// API: Get Participants (Admin)
-app.get('/api/participants', adminAuth, (req, res) => {
-    db.all(`SELECT * FROM participants ORDER BY id DESC`, [], (err, rows) => {
-        if (err) res.status(500).json({ error: err.message });
-        else res.json(rows);
-    });
+// API: Get Participants (Admin Protected)
+app.get('/api/participants', adminAuth, async (req, res) => {
+    try {
+        const { rows } = await pool.query(`SELECT * FROM participants ORDER BY id DESC`);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-// API: Upload Feature Images (Admin)
-app.post('/api/upload-image', adminAuth, upload.single('image'), (req, res) => {
+// API: Upload Feature Images (Admin Protected)
+app.post('/api/upload-image', adminAuth, upload.single('image'), async (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     const { category } = req.body;
     const filename = req.file.filename;
-    db.run(`INSERT INTO feature_images (category, filename) VALUES (?, ?)`, [category, filename], function(err) {
-        if (err) res.status(500).json({ error: err.message });
-        else res.json({ message: 'Uploaded successfully', filename, id: this.lastID });
-    });
+    try {
+        const { rows } = await pool.query(`INSERT INTO feature_images (category, filename) VALUES ($1, $2) RETURNING id`, [category, filename]);
+        res.json({ message: 'Uploaded successfully', filename, id: rows[0].id });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-// API: Get All Feature Images with IDs (Admin)
-app.get('/api/admin-features', adminAuth, (req, res) => {
-    db.all(`SELECT * FROM feature_images`, [], (err, rows) => {
-        if (err) res.status(500).json({ error: err.message });
-        else res.json(rows);
-    });
+// API: Get All Feature Images with IDs (Admin Protected)
+app.get('/api/admin-features', adminAuth, async (req, res) => {
+    try {
+        const { rows } = await pool.query(`SELECT * FROM feature_images`);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // API: Get Feature Images grouped (Public)
-app.get('/api/features', (req, res) => {
-    db.all(`SELECT * FROM feature_images`, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-
+app.get('/api/features', async (req, res) => {
+    try {
+        const { rows } = await pool.query(`SELECT * FROM feature_images`);
         const features = {
             hotel: { title: "فندق 4 نجوم", images: [] },
             beaches: { title: "شواطئ فيروزية", images: [] },
             baths: { title: "حمامات معدنية", images: [] },
             park: { title: "ألعاب مائية وملاهي", images: [] }
         };
-
         rows.forEach(row => {
             if (features[row.category]) {
                 features[row.category].images.push(`/uploads/${row.filename}`);
             }
         });
         res.json(features);
-    });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-// API: Delete Image (Admin)
-app.delete('/api/delete-image/:id', adminAuth, (req, res) => {
-    db.get(`SELECT filename FROM feature_images WHERE id = ?`, [req.params.id], (err, row) => {
-        if (row) {
-            fs.remove(path.join(uploadsDir, row.filename)).catch(err => console.error(err));
-            db.run(`DELETE FROM feature_images WHERE id = ?`, [req.params.id], () => {
-                res.json({ message: 'Deleted' });
-            });
-        } else res.status(404).json({ error: 'Not found' });
-    });
+// API: Delete Image (Admin Protected)
+app.delete('/api/delete-image/:id', adminAuth, async (req, res) => {
+    try {
+        const { rows } = await pool.query(`SELECT filename FROM feature_images WHERE id = $1`, [req.params.id]);
+        if (rows.length > 0) {
+            await fs.remove(path.join(uploadsDir, rows[0].filename)).catch(err => console.error(err));
+            await pool.query(`DELETE FROM feature_images WHERE id = $1`, [req.params.id]);
+            res.json({ message: 'Deleted' });
+        } else {
+            res.status(404).json({ error: 'Not found' });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-// Admin Route
+// Admin Route - Serves admin.html securely via tokenized URL
 app.get(`/${ADMIN_TOKEN}`, (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
 
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
