@@ -1,0 +1,19 @@
+{
+  "name": "voyage-algerie-est",
+  "version": "1.0.0",
+  "description": "Landing page for tourism in East Algeria",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.4",
+    "express": "^4.22.1",
+    "fs-extra": "^11.3.3",
+    "multer": "^1.4.5-lts.1",
+    "pg": "^8.19.0"
+  }
+}

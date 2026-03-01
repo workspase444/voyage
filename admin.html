@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - رحلة الشرق</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sea-blue: #0284c7;
+            --sea-blue-dark: #0c4a6e;
+            --sandy-gold: #fbbf24;
+        }
+        body { font-family: 'Cairo', sans-serif; background: #f8fafc; color: var(--sea-blue-dark); }
+        .bg-sea-blue { background-color: var(--sea-blue); }
+        .text-sea-blue { color: var(--sea-blue); }
+        .bg-sandy-gold { background-color: var(--sandy-gold); }
+        .tab-active { background: white; color: var(--sea-blue); font-weight: 800; border-bottom: 4px solid var(--sea-blue); }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; }
+            .print-only { display: block !important; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 12px; text-align: right; }
+            th { background: #f8f8f8 !important; color: black !important; }
+        }
+        .print-only { display: none; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <nav class="bg-sea-blue-dark text-white shadow-2xl p-6 mb-10 no-print">
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-reverse space-x-4">
+                <div class="w-12 h-12 bg-sea-blue rounded-2xl flex items-center justify-center text-2xl">🌍</div>
+                <h1 class="text-2xl font-black tracking-tight">إدارة رحلة الشرق</h1>
+            </div>
+            <div class="flex flex-wrap justify-center gap-3">
+                <button onclick="showSection('participants')" class="px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition font-bold">👤 المشاركون</button>
+                <button onclick="showSection('features')" class="px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition font-bold">🖼️ معرض الصور</button>
+                <button onclick="printTravelers()" class="px-6 py-2.5 rounded-xl bg-sandy-gold text-slate-900 hover:scale-105 transition font-black">🖨️ طباعة القائمة</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 no-print">
+
+        <!-- Participants Section -->
+        <div id="participantsSection" class="section space-y-6">
+            <div class="flex space-x-reverse space-x-2 bg-slate-200/50 p-1.5 rounded-2xl w-fit">
+                <button id="tab-pending" onclick="filterList('pending')" class="py-2.5 px-8 rounded-xl transition-all duration-300">الانتظار (🕒)</button>
+                <button id="tab-accepted" onclick="filterList('accepted')" class="py-2.5 px-8 rounded-xl transition-all duration-300">الناجحين (✅)</button>
+                <button id="tab-rejected" onclick="filterList('rejected')" class="py-2.5 px-8 rounded-xl transition-all duration-300">المرفوضين (❌)</button>
+            </div>
+
+            <div class="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-100">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-500 uppercase text-sm font-bold">
+                                <th class="p-6 border-b">المسافر</th>
+                                <th class="p-6 border-b">الاتصال</th>
+                                <th class="p-6 border-b">معلومات الميلاد</th>
+                                <th class="p-6 border-b">السكن والوظيفة</th>
+                                <th class="p-6 border-b">إسعافات؟</th>
+                                <th class="p-6 border-b text-center">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="participantsList" class="divide-y divide-slate-50">
+                            <tr><td colspan="6" class="p-20 text-center text-slate-400 italic">جاري تحميل البيانات...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div id="featuresSection" class="section hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-50">
+                    <h3 class="text-2xl font-black mb-6 text-sea-blue flex items-center gap-3">🏨 فندق 4 نجوم</h3>
+                    <input type="file" id="file-hotel" class="hidden" onchange="uploadImage('hotel', this)">
+                    <label for="file-hotel" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-3xl cursor-pointer hover:bg-slate-50 hover:border-sea-blue transition-all group">
+                        <span class="text-4xl mb-2 group-hover:scale-110 transition">📷</span>
+                        <span class="font-bold text-slate-500">إضافة صورة جديدة</span>
+                    </label>
+                    <div id="gallery-hotel" class="grid grid-cols-3 gap-4 mt-8"></div>
+                </div>
+                <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-50">
+                    <h3 class="text-2xl font-black mb-6 text-sea-blue flex items-center gap-3">🏖️ شواطئ فيروزية</h3>
+                    <input type="file" id="file-beaches" class="hidden" onchange="uploadImage('beaches', this)">
+                    <label for="file-beaches" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-3xl cursor-pointer hover:bg-slate-50 hover:border-sea-blue transition-all">
+                        <span class="text-4xl mb-2">📷</span>
+                        <span class="font-bold text-slate-500">إضافة صورة جديدة</span>
+                    </label>
+                    <div id="gallery-beaches" class="grid grid-cols-3 gap-4 mt-8"></div>
+                </div>
+                <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-50">
+                    <h3 class="text-2xl font-black mb-6 text-sea-blue flex items-center gap-3">🧖‍♂️ حمامات معدنية</h3>
+                    <input type="file" id="file-baths" class="hidden" onchange="uploadImage('baths', this)">
+                    <label for="file-baths" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-3xl cursor-pointer hover:bg-slate-50 hover:border-sea-blue transition-all">
+                        <span class="text-4xl mb-2">📷</span>
+                        <span class="font-bold text-slate-500">إضافة صورة جديدة</span>
+                    </label>
+                    <div id="gallery-baths" class="grid grid-cols-3 gap-4 mt-8"></div>
+                </div>
+                <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-50">
+                    <h3 class="text-2xl font-black mb-6 text-sea-blue flex items-center gap-3">🎢 ألعاب مائية وملاهي</h3>
+                    <input type="file" id="file-park" class="hidden" onchange="uploadImage('park', this)">
+                    <label for="file-park" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-3xl cursor-pointer hover:bg-slate-50 hover:border-sea-blue transition-all">
+                        <span class="text-4xl mb-2">📷</span>
+                        <span class="font-bold text-slate-500">إضافة صورة جديدة</span>
+                    </label>
+                    <div id="gallery-park" class="grid grid-cols-3 gap-4 mt-8"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Print View -->
+    <div id="printableArea" class="print-only p-12">
+        <h1 class="text-4xl font-black text-center mb-10">قائمة المسافرين الرسمية - رحلة الشرق 2024</h1>
+        <table class="w-full border-collapse">
+            <thead>
+                <tr class="bg-slate-100">
+                    <th class="p-4 border">الاسم واللقب</th>
+                    <th class="p-4 border">رقم الهاتف</th>
+                    <th class="p-4 border">تاريخ الميلاد</th>
+                    <th class="p-4 border">السكن</th>
+                    <th class="p-4 border">الوظيفة</th>
+                </tr>
+            </thead>
+            <tbody id="printList"></tbody>
+        </table>
+        <div class="mt-20 text-center text-slate-400 font-bold">تم إنشاء الموقع بواسطة Jules - 2024</div>
+    </div>
+
+    <footer class="mt-20 py-12 text-center text-slate-400 no-print border-t">
+        <p>تم إنشاء الموقع وبرمجته بواسطة Jules - 2024</p>
+    </footer>
+
+    <script>
+        const ADMIN_TOKEN = '';
+        let allParticipants = [];
+        let currentFilter = 'pending';
+
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(id + 'Section').classList.remove('hidden');
+        }
+
+        async function loadParticipants() {
+            try {
+                const res = await fetch('/api/participants', { headers: { 'X-Admin-Token': ADMIN_TOKEN } });
+                allParticipants = await res.json();
+                renderList();
+            } catch (e) { console.error(e); }
+        }
+
+        function filterList(status) {
+            currentFilter = status;
+            document.querySelectorAll('#participantsSection button[id^="tab-"]').forEach(b => b.classList.remove('tab-active', 'bg-white', 'shadow-sm', 'text-sea-blue'));
+            document.getElementById('tab-' + status).classList.add('tab-active', 'bg-white', 'shadow-sm');
+            renderList();
+        }
+
+        function renderList() {
+            const body = document.getElementById('participantsList');
+            body.innerHTML = '';
+            const filtered = allParticipants.filter(p => (p.status || 'pending') === currentFilter);
+
+            if (filtered.length === 0) {
+                body.innerHTML = `<tr><td colspan="6" class="p-32 text-center text-slate-300 font-bold text-xl">لا توجد سجلات</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(p => {
+                const row = document.createElement('tr');
+                row.className = 'group hover:bg-slate-50 transition-colors';
+
+                const createCell = (content, cls = 'p-6') => {
+                    const td = document.createElement('td');
+                    td.className = cls;
+                    if (typeof content === 'string') td.textContent = content;
+                    else td.appendChild(content);
+                    return td;
+                };
+
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'font-black text-slate-800';
+                nameDiv.textContent = p.fullname || p.fullName;
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'text-xs text-slate-400 mt-1';
+                dateDiv.textContent = new Date(p.timestamp).toLocaleString('ar-DZ');
+                const cell1 = document.createElement('td');
+                cell1.className = 'p-6';
+                cell1.appendChild(nameDiv); cell1.appendChild(dateDiv);
+
+                const phoneDiv = document.createElement('div');
+                phoneDiv.className = 'font-bold text-sea-blue';
+                phoneDiv.dir = 'ltr'; phoneDiv.textContent = p.phonenumber || p.phoneNumber;
+                const genderDiv = document.createElement('div');
+                genderDiv.className = 'text-xs text-slate-400';
+                genderDiv.textContent = p.gender;
+                const cell2 = document.createElement('td');
+                cell2.className = 'p-6';
+                cell2.appendChild(phoneDiv); cell2.appendChild(genderDiv);
+
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'font-medium';
+                infoDiv.textContent = p.birthdate || p.birthDate;
+                const placeDiv = document.createElement('div');
+                placeDiv.className = 'text-slate-400';
+                placeDiv.textContent = p.birthplace || p.birthPlace;
+                const cell3 = document.createElement('td');
+                cell3.className = 'p-6 text-sm';
+                cell3.appendChild(infoDiv); cell3.appendChild(placeDiv);
+
+                const addrDiv = document.createElement('div');
+                addrDiv.className = 'font-medium text-slate-700';
+                addrDiv.textContent = p.currentaddress || p.currentAddress;
+                const jobDiv = document.createElement('div');
+                jobDiv.className = 'text-slate-400 italic';
+                jobDiv.textContent = p.jobtype || p.jobType;
+                const cell4 = document.createElement('td');
+                cell4.className = 'p-6 text-sm';
+                cell4.appendChild(addrDiv); cell4.appendChild(jobDiv);
+
+                const faSpan = document.createElement('span');
+                faSpan.className = `px-3 py-1 rounded-full text-xs font-black ${(p.firstaid || p.firstAid) === 'نعم' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`;
+                faSpan.textContent = (p.firstaid || p.firstAid) === 'نعم' ? 'نعم' : 'لا';
+                const cell5 = createCell(faSpan);
+
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity';
+                actionsDiv.innerHTML = getActionButtonsHTML(p.id);
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'w-10 h-10 rounded-xl bg-slate-100 text-slate-400 hover:bg-red-50 hover:text-red-500 transition flex items-center justify-center text-xl';
+                deleteBtn.innerHTML = '🗑️';
+                deleteBtn.onclick = () => deleteParticipant(p.id);
+                actionsDiv.appendChild(deleteBtn);
+                const cell6 = createCell(actionsDiv);
+
+                row.appendChild(cell1); row.appendChild(cell2); row.appendChild(cell3); row.appendChild(cell4); row.appendChild(cell5); row.appendChild(cell6);
+                body.appendChild(row);
+            });
+        }
+
+        function getActionButtonsHTML(id) {
+            if (currentFilter === 'pending') {
+                return `
+                    <button onclick="updateStatus(${id}, 'accepted')" class="w-10 h-10 rounded-xl bg-green-500 text-white shadow-lg shadow-green-200 hover:scale-110 transition flex items-center justify-center text-xl">✅</button>
+                    <button onclick="updateStatus(${id}, 'rejected')" class="w-10 h-10 rounded-xl bg-red-500 text-white shadow-lg shadow-red-200 hover:scale-110 transition flex items-center justify-center text-xl">❌</button>
+                `;
+            } else if (currentFilter === 'accepted') {
+                return `
+                    <button onclick="updateStatus(${id}, 'pending')" class="w-10 h-10 rounded-xl bg-slate-800 text-white hover:scale-110 transition flex items-center justify-center text-xl">🕒</button>
+                    <button onclick="updateStatus(${id}, 'rejected')" class="w-10 h-10 rounded-xl bg-red-500 text-white shadow-lg shadow-red-200 hover:scale-110 transition flex items-center justify-center text-xl">❌</button>
+                `;
+            } else {
+                return `
+                    <button onclick="updateStatus(${id}, 'pending')" class="w-10 h-10 rounded-xl bg-slate-800 text-white hover:scale-110 transition flex items-center justify-center text-xl">🕒</button>
+                    <button onclick="updateStatus(${id}, 'accepted')" class="w-10 h-10 rounded-xl bg-green-500 text-white hover:scale-110 transition flex items-center justify-center text-xl">✅</button>
+                `;
+            }
+        }
+
+        async function updateStatus(id, status) {
+            await fetch(`/api/participants/${id}/status`, {
+                method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-Admin-Token': ADMIN_TOKEN },
+                body: JSON.stringify({ status })
+            });
+            loadParticipants();
+        }
+
+        async function deleteParticipant(id) {
+            if (confirm('حذف السجل؟')) {
+                await fetch(`/api/participants/${id}`, { method: 'DELETE', headers: { 'X-Admin-Token': ADMIN_TOKEN } });
+                loadParticipants();
+            }
+        }
+
+        function printTravelers() {
+            const accepted = allParticipants.filter(p => p.status === 'accepted');
+            if (accepted.length === 0) return alert('لا يوجد مقبولون');
+            const printList = document.getElementById('printList');
+            printList.innerHTML = '';
+            accepted.forEach(p => {
+                const tr = document.createElement('tr');
+                const td1 = document.createElement('td'); td1.textContent = p.fullname || p.fullName;
+                const td2 = document.createElement('td'); td2.dir = 'ltr'; td2.textContent = p.phonenumber || p.phoneNumber;
+                const td3 = document.createElement('td'); td3.textContent = p.birthdate || p.birthDate;
+                const td4 = document.createElement('td'); td4.textContent = p.currentaddress || p.currentAddress;
+                const td5 = document.createElement('td'); td5.textContent = p.jobtype || p.jobType;
+                tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3); tr.appendChild(td4); tr.appendChild(td5);
+                printList.appendChild(tr);
+            });
+            window.print();
+        }
+
+        async function loadGalleries() {
+            const res = await fetch('/api/admin-features', { headers: { 'X-Admin-Token': ADMIN_TOKEN } });
+            const allImages = await res.json();
+            ['hotel', 'beaches', 'baths', 'park'].forEach(cat => {
+                const container = document.getElementById('gallery-' + cat);
+                container.innerHTML = '';
+                allImages.filter(img => img.category === cat).forEach(img => {
+                    const div = document.createElement('div');
+                    div.className = 'relative aspect-square rounded-2xl overflow-hidden shadow-md group';
+                    div.innerHTML = `<img src="${img.image_data}" class="w-full h-full object-cover">`;
+                    const btn = document.createElement('button');
+                    btn.className = 'absolute top-2 right-2 bg-red-500 text-white w-8 h-8 rounded-xl opacity-0 group-hover:opacity-100 transition flex items-center justify-center font-bold';
+                    btn.innerHTML = '&times;';
+                    btn.onclick = () => deleteImage(img.id);
+                    div.appendChild(btn);
+                    container.appendChild(div);
+                });
+            });
+        }
+
+        async function uploadImage(category, input) {
+            if (!input.files[0]) return;
+            const formData = new FormData();
+            formData.append('image', input.files[0]);
+            formData.append('category', category);
+            await fetch('/api/upload-image', { method: 'POST', headers: { 'X-Admin-Token': ADMIN_TOKEN }, body: formData });
+            input.value = ''; loadGalleries();
+        }
+
+        async function deleteImage(id) {
+            if (confirm('حذف؟')) {
+                await fetch('/api/delete-image/' + id, { method: 'DELETE', headers: { 'X-Admin-Token': ADMIN_TOKEN } });
+                loadGalleries();
+            }
+        }
+
+        loadParticipants();
+        loadGalleries();
+        filterList('pending');
+    </script>
+</body>
+</html>
