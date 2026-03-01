@@ -35,6 +35,7 @@ async function initDb() {
             currentAddress TEXT,
             jobType TEXT,
             firstAid TEXT,
+            status TEXT DEFAULT 'pending',
             timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`);
 
@@ -43,6 +44,11 @@ async function initDb() {
             category TEXT,
             filename TEXT
         )`);
+
+        try {
+            await pool.query(`ALTER TABLE participants ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending'`);
+        } catch (e) {}
+
         console.log("PostgreSQL database initialized.");
     } catch (err) {
         console.error("Database initialization error:", err);
@@ -50,7 +56,7 @@ async function initDb() {
 }
 initDb();
 
-// Multer Storage Configuration with Validation
+// Multer Storage Configuration
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, 'uploads/'),
     filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
@@ -58,13 +64,13 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         const filetypes = /jpeg|jpg|png|webp/;
         const mimetype = filetypes.test(file.mimetype);
         const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
         if (mimetype && extname) return cb(null, true);
-        cb(new Error("Error: File upload only supports images (jpeg, jpg, png, webp)"));
+        cb(new Error("Error: Images only!"));
     }
 });
 
@@ -110,6 +116,27 @@ app.get('/api/participants', adminAuth, async (req, res) => {
     try {
         const { rows } = await pool.query(`SELECT * FROM participants ORDER BY id DESC`);
         res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// API: Update Participant Status (Admin Protected)
+app.patch('/api/participants/:id/status', adminAuth, async (req, res) => {
+    try {
+        const { status } = req.body;
+        await pool.query(`UPDATE participants SET status = $1 WHERE id = $2`, [status, req.params.id]);
+        res.json({ message: 'Status updated' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// API: Delete Participant (Admin Protected)
+app.delete('/api/participants/:id', adminAuth, async (req, res) => {
+    try {
+        await pool.query(`DELETE FROM participants WHERE id = $1`, [req.params.id]);
+        res.json({ message: 'Deleted' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -175,7 +202,12 @@ app.delete('/api/delete-image/:id', adminAuth, async (req, res) => {
     }
 });
 
-// Admin Route - Serves admin.html securely via tokenized URL
-app.get(`/${ADMIN_TOKEN}`, (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
+// Admin Route - Serves admin.html securely and injects the token
+app.get(`/${ADMIN_TOKEN}`, (req, res) => {
+    let content = fs.readFileSync(path.join(__dirname, 'admin.html'), 'utf8');
+    // Inject the current token into the HTML so the frontend can use it
+    content = content.replace('const ADMIN_TOKEN = \'\';', `const ADMIN_TOKEN = '${ADMIN_TOKEN}';`);
+    res.send(content);
+});
 
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

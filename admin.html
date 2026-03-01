@@ -10,21 +10,31 @@
         body { font-family: 'Cairo', sans-serif; }
         .bg-turquoise { background-color: #40E0D0; }
         .text-turquoise { color: #40E0D0; }
+        .bg-gold { background-color: #FFD700; }
+        @media print {
+            .no-print { display: none !important; }
+            body { background-color: white; }
+            .print-only { display: block !important; }
+            table { border: 1px solid #eee; width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #eee; padding: 10px; text-align: right; }
+        }
+        .print-only { display: none; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
 
-    <nav class="bg-white shadow-md p-6 mb-10">
+    <nav class="bg-white shadow-md p-6 mb-10 no-print">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-2xl font-bold text-turquoise">لوحة تحكم الرحلة</h1>
             <div class="flex space-x-reverse space-x-4">
                 <button onclick="showSection('participants')" class="px-4 py-2 rounded-lg bg-turquoise text-white">المشاركون</button>
                 <button onclick="showSection('features')" class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">إدارة الصور</button>
+                <button onclick="printTravelers()" class="px-4 py-2 rounded-lg bg-gold hover:bg-yellow-500 font-bold">🖨️ طباعة قائمة المسافرين</button>
             </div>
         </div>
     </nav>
 
-    <div class="container mx-auto px-6">
+    <div class="container mx-auto px-6 no-print">
 
         <!-- Participants Section -->
         <div id="participantsSection" class="section">
@@ -41,7 +51,7 @@
                                 <th class="p-4 border-b">السكن</th>
                                 <th class="p-4 border-b">الوظيفة</th>
                                 <th class="p-4 border-b">إسعافات أولية؟</th>
-                                <th class="p-4 border-b">التاريخ</th>
+                                <th class="p-4 border-b text-center">الإجراءات</th>
                             </tr>
                         </thead>
                         <tbody id="participantsList">
@@ -55,7 +65,6 @@
         <!-- Features Section -->
         <div id="featuresSection" class="section hidden">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Feature Category Card -->
                 <div class="bg-white p-6 rounded-2xl shadow-lg">
                     <h3 class="text-xl font-bold mb-4 text-turquoise">فندق 4 نجوم</h3>
                     <div class="flex items-center space-x-reverse space-x-2 mb-4">
@@ -64,7 +73,6 @@
                     </div>
                     <div id="gallery-hotel" class="grid grid-cols-3 gap-3"></div>
                 </div>
-
                 <div class="bg-white p-6 rounded-2xl shadow-lg">
                     <h3 class="text-xl font-bold mb-4 text-turquoise">شواطئ فيروزية</h3>
                     <div class="flex items-center space-x-reverse space-x-2 mb-4">
@@ -73,7 +81,6 @@
                     </div>
                     <div id="gallery-beaches" class="grid grid-cols-3 gap-3"></div>
                 </div>
-
                 <div class="bg-white p-6 rounded-2xl shadow-lg">
                     <h3 class="text-xl font-bold mb-4 text-turquoise">حمامات معدنية</h3>
                     <div class="flex items-center space-x-reverse space-x-2 mb-4">
@@ -82,7 +89,6 @@
                     </div>
                     <div id="gallery-baths" class="grid grid-cols-3 gap-3"></div>
                 </div>
-
                 <div class="bg-white p-6 rounded-2xl shadow-lg">
                     <h3 class="text-xl font-bold mb-4 text-turquoise">ألعاب مائية وملاهي</h3>
                     <div class="flex items-center space-x-reverse space-x-2 mb-4">
@@ -96,8 +102,34 @@
 
     </div>
 
+    <!-- Print View -->
+    <div id="printableArea" class="print-only p-10">
+        <h1 class="text-3xl font-bold text-center mb-10">قائمة المسافرين - رحلة الشرق الجزائري</h1>
+        <table class="w-full border-collapse">
+            <thead>
+                <tr>
+                    <th>الاسم واللقب</th>
+                    <th>رقم الهاتف</th>
+                    <th>تاريخ الميلاد</th>
+                    <th>السكن</th>
+                    <th>الوظيفة</th>
+                </tr>
+            </thead>
+            <tbody id="printList"></tbody>
+        </table>
+        <div class="mt-20 text-center text-gray-400 text-sm">
+            تم إنشاء الموقع وبرمجته بواسطة Jules - 2024
+        </div>
+    </div>
+
+    <footer class="mt-20 py-10 text-center text-gray-500 no-print">
+        <p>تم إنشاء الموقع وبرمجته بواسطة Jules - 2024</p>
+    </footer>
+
     <script>
-        const ADMIN_TOKEN = 'admin-dashboard-access-key-777';
+        // Token will be injected by the server
+        const ADMIN_TOKEN = '';
+        let allParticipants = [];
 
         function showSection(id) {
             document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
@@ -106,12 +138,13 @@
 
         async function loadParticipants() {
             const res = await fetch('/api/participants', { headers: { 'X-Admin-Token': ADMIN_TOKEN } });
-            const data = await res.json();
+            allParticipants = await res.json();
             const body = document.getElementById('participantsList');
             body.innerHTML = '';
-            data.forEach(p => {
+
+            allParticipants.forEach(p => {
                 const row = document.createElement('tr');
-                row.className = 'border-b hover:bg-gray-50';
+                row.className = `border-b transition ${p.status === 'accepted' ? 'bg-green-50' : p.status === 'rejected' ? 'bg-red-50 opacity-60' : ''}`;
 
                 const addCell = (text, cls = 'p-4') => {
                     const td = document.createElement('td');
@@ -120,27 +153,76 @@
                     return td;
                 };
 
-                row.appendChild(addCell(p.fullName, 'p-4 font-bold'));
-                const tel = addCell(p.phoneNumber, 'p-4'); tel.dir = 'ltr'; row.appendChild(tel);
-                row.appendChild(addCell(p.birthDate));
+                row.appendChild(addCell(p.fullname || p.fullName, 'p-4 font-bold'));
+                const tel = addCell(p.phonenumber || p.phoneNumber, 'p-4'); tel.dir = 'ltr'; row.appendChild(tel);
+                row.appendChild(addCell(p.birthdate || p.birthDate));
                 row.appendChild(addCell(p.gender));
-                row.appendChild(addCell(p.birthPlace));
-                row.appendChild(addCell(p.currentAddress));
-                row.appendChild(addCell(p.jobType));
+                row.appendChild(addCell(p.birthplace || p.birthPlace));
+                row.appendChild(addCell(p.currentaddress || p.currentAddress));
+                row.appendChild(addCell(p.jobtype || p.jobType));
 
                 const fa = document.createElement('td'); fa.className = 'p-4';
-                fa.innerHTML = `<span class="px-2 py-1 rounded ${p.firstAid==='نعم'?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${p.firstAid}</span>`;
+                fa.innerHTML = `<span class="px-2 py-1 rounded ${ (p.firstaid || p.firstAid) ==='نعم'?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${p.firstaid || p.firstAid}</span>`;
                 row.appendChild(fa);
 
-                row.appendChild(addCell(new Date(p.timestamp).toLocaleString('ar-DZ'), 'p-4 text-xs text-gray-500'));
+                const actions = document.createElement('td');
+                actions.className = 'p-4 flex items-center justify-center space-x-reverse space-x-2';
+                actions.innerHTML = `
+                    <button onclick="updateStatus(${p.id}, 'accepted')" title="قبول" class="w-8 h-8 rounded-full bg-green-500 text-white hover:bg-green-600 shadow transition flex items-center justify-center">✅</button>
+                    <button onclick="updateStatus(${p.id}, 'rejected')" title="رفض" class="w-8 h-8 rounded-full bg-red-500 text-white hover:bg-red-600 shadow transition flex items-center justify-center">❌</button>
+                    <button onclick="deleteParticipant(${p.id})" title="حذف" class="w-8 h-8 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 transition flex items-center justify-center">🗑️</button>
+                `;
+                row.appendChild(actions);
+
                 body.appendChild(row);
             });
         }
 
-        async function loadGalleries() {
-            const res = await fetch('/api/admin-features', { headers: { 'X-Admin-Token': ADMIN_TOKEN } });
-            const allImages = await res.json();
+        async function updateStatus(id, status) {
+            const res = await fetch(`/api/participants/${id}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'X-Admin-Token': ADMIN_TOKEN },
+                body: JSON.stringify({ status })
+            });
+            if (res.ok) loadParticipants();
+        }
 
+        async function deleteParticipant(id) {
+            if (confirm('هل أنت متأكد من حذف هذا المشترك نهائياً؟')) {
+                const res = await fetch(`/api/participants/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'X-Admin-Token': ADMIN_TOKEN }
+                });
+                if (res.ok) loadParticipants();
+            }
+        }
+
+        function printTravelers() {
+            const accepted = allParticipants.filter(p => p.status === 'accepted');
+            if (accepted.length === 0) {
+                alert('لا يوجد مسافرون مقبولون للطباعة بعد.');
+                return;
+            }
+            const printList = document.getElementById('printList');
+            printList.innerHTML = '';
+            accepted.forEach(p => {
+                printList.innerHTML += `
+                    <tr>
+                        <td>${p.fullname || p.fullName}</td>
+                        <td dir="ltr">${p.phonenumber || p.phoneNumber}</td>
+                        <td>${p.birthdate || p.birthDate}</td>
+                        <td>${p.currentaddress || p.currentAddress}</td>
+                        <td>${p.jobtype || p.jobType}</td>
+                    </tr>
+                `;
+            });
+            window.print();
+        }
+
+        async function loadGalleries() {
+            const adminRes = await fetch('/api/admin-features', { headers: { 'X-Admin-Token': ADMIN_TOKEN } });
+            if (!adminRes.ok) return;
+            const allImages = await adminRes.json();
             ['hotel', 'beaches', 'baths', 'park'].forEach(cat => {
                 const container = document.getElementById('gallery-' + cat);
                 container.innerHTML = '';
@@ -161,18 +243,12 @@
             const formData = new FormData();
             formData.append('image', input.files[0]);
             formData.append('category', category);
-
             const res = await fetch('/api/upload-image', {
                 method: 'POST',
                 headers: { 'X-Admin-Token': ADMIN_TOKEN },
                 body: formData
             });
-            if (res.ok) {
-                input.value = '';
-                loadGalleries();
-            } else {
-                alert('فشل في رفع الصورة');
-            }
+            if (res.ok) { input.value = ''; loadGalleries(); }
         }
 
         async function deleteImage(id) {
